@@ -1,0 +1,16 @@
+{
+  "name": "@open-pstack/poteto-mode-tools",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "\"$npm_execpath\" test --parallel orch watch-pr runner",
+    "typecheck": "tsc --project watch-pr/tsconfig.json --noEmit --strict && tsc --project runner/tsconfig.json --noEmit --strict"
+  },
+  "dependencies": {
+    "commander": "14.0.0"
+  },
+  "devDependencies": {
+    "bun-types": "latest",
+    "typescript": "latest"
+  }
+}

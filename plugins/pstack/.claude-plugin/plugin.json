@@ -1,0 +1,21 @@
+{
+  "name": "pstack",
+  "displayName": "pstack",
+  "version": "1.0.0",
+  "description": "if you want to go fast, go deep first. pstack helps you write less, but higher quality code. rigorous agent workflows you can parallelize with confidence. Ported from cursor/plugins/pstack for Claude Code and Codex.",
+  "author": {
+    "name": "Lauren Tan"
+  },
+  "homepage": "https://github.com/ericlitman/open-pstack",
+  "repository": "https://github.com/ericlitman/open-pstack",
+  "license": "MIT",
+  "keywords": [
+    "pstack",
+    "poteto-mode",
+    "workflow",
+    "principles",
+    "agent-style",
+    "subagents",
+    "unslop"
+  ]
+}
