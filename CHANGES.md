@@ -2,7 +2,7 @@
 
 This port applies the Cursor → Claude Code substitutions in skill bodies. Earlier drafts left them flagged; this revision resolves them. A later pass added a Codex build that shares the same skills; see [Codex port](#codex-port) below.
 
-## Unreleased
+## 1.0.2 retries transient Grok authentication preflights
 
 `pstack-runner` now waits five seconds and retries `grok models` once when Grok's first preflight would be classified as unauthenticated. This handles the CLI's brief contradictory output during self-update, when it can print an unauthenticated banner while exiting 0 and listing the requested model. A second failure remains terminal with exit 77. The retry shares the existing absolute deadline and cancellation latch, the receipt keeps evidence from both attempts, and model execution still runs at most once.
 
