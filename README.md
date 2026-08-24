@@ -26,14 +26,7 @@ The normal entry point is `poteto-mode`. You give it a task in plain language. I
 - runs the code and checks real behavior instead of stopping at “the tests pass”; and
 - carries the work through review, continuous integration (CI), and a ready-to-merge pull request when asked.
 
-```mermaid
-flowchart LR
-    A[Your task] --> B[poteto-mode]
-    B --> C[Choose steps for this kind of work]
-    C --> D[Use focused skills and models]
-    D --> E[Run the product and verify behavior]
-    E --> F[Review and prepare the pull request]
-```
+![How pstack routes a task through focused skills, real-app proof, and a review-ready pull request](assets/pstack-workflow.png)
 
 pstack does not ask you to trust an agent on day one. It helps the agent leave evidence you can inspect. Start with supervised work. Let it run more work in parallel only after its checks have earned that trust in your own repositories.
 
