@@ -20,6 +20,7 @@ import type {
 import { UsageError } from "./types.ts";
 
 const ERROR_EVIDENCE_LIMIT = 4_000;
+const GROK_PREFLIGHT_RETRY_DELAY_MS = 5_000;
 const MAX_TIMER_DELAY_MS = 2_147_483_647;
 
 interface ProcessResult {
@@ -38,6 +39,8 @@ interface RunCancellation {
   readonly signal: CancellationSignal | null;
   dispose(): void;
 }
+
+type RetryWaitResult = "ready" | "cancelled" | "timed-out";
 
 export interface RunResult {
   readonly exitCode: number;
@@ -318,6 +321,34 @@ async function runProcess(
   }
 }
 
+async function waitForGrokPreflightRetry(
+  deadlineAt: number | null,
+  cancellation: RunCancellation
+): Promise<RetryWaitResult> {
+  if (cancellation.signal !== null) return "cancelled";
+
+  const now = Date.now();
+  if (deadlineAt !== null && now >= deadlineAt) return "timed-out";
+
+  const retryAt = now + GROK_PREFLIGHT_RETRY_DELAY_MS;
+  const wakeAt = deadlineAt === null ? retryAt : Math.min(retryAt, deadlineAt);
+  const timerResult: RetryWaitResult = wakeAt < retryAt ? "timed-out" : "ready";
+  let timer: ReturnType<typeof setTimeout> | null = null;
+  try {
+    const result = await Promise.race([
+      cancellation.promise.then((): RetryWaitResult => "cancelled"),
+      new Promise<RetryWaitResult>((resolve) => {
+        timer = setTimeout(() => resolve(timerResult), wakeAt - now);
+      }),
+    ]);
+    if (cancellation.signal !== null) return "cancelled";
+    if (deadlineAt !== null && Date.now() >= deadlineAt) return "timed-out";
+    return result;
+  } finally {
+    if (timer !== null) clearTimeout(timer);
+  }
+}
+
 function preflightPassed(provider: Provider, model: string, result: ProcessResult): boolean {
   if (result.exitCode !== 0 || result.timedOut) return false;
   const combined = `${result.stdout}\n${result.stderr}`;
@@ -355,6 +386,31 @@ function unavailableStatus(value: string): ReceiptStatus {
     return "unavailable-model";
   }
   return "child-failed";
+}
+
+function preflightFailureStatus(
+  provider: Provider,
+  model: string,
+  value: string
+): ReceiptStatus {
+  const status = unavailableStatus(value);
+  if (status !== "child-failed") return status;
+  return provider === "grok" && !value.includes(model)
+    ? "unavailable-model"
+    : "unauthenticated";
+}
+
+function retriedPreflightEvidence(
+  first: string,
+  second: string,
+  secondPassed: boolean
+): string {
+  const firstLabel = "attempt 1 failed:\n";
+  const secondLabel = `\n\nattempt 2 ${secondPassed ? "passed" : "failed"}:\n`;
+  const payloadLimit = ERROR_EVIDENCE_LIMIT - firstLabel.length - secondLabel.length;
+  const firstLimit = Math.floor(payloadLimit / 2);
+  const secondLimit = payloadLimit - firstLimit;
+  return `${firstLabel}${first.slice(0, firstLimit)}${secondLabel}${second.slice(0, secondLimit)}`;
 }
 
 function statusExitCode(status: ReceiptStatus): number {
@@ -553,7 +609,7 @@ async function executeLane(
   }
 
   const preflightExecutable = executable;
-  const preflightResult = await runProcess(
+  let preflightResult = await runProcess(
     preflightExecutable,
     preflight,
     options.cwd,
@@ -562,11 +618,61 @@ async function executeLane(
     deadlineAt,
     cancellation
   );
-  const rawPreflightEvidence = evidence(`${preflightResult.stdout}\n${preflightResult.stderr}`);
-  const passed = preflightPassed(options.provider, options.model, preflightResult);
-  const preflightEvidence = passed
+  let rawPreflightEvidence = evidence(`${preflightResult.stdout}\n${preflightResult.stderr}`);
+  let passed = preflightPassed(options.provider, options.model, preflightResult);
+  let preflightEvidence = passed
     ? successfulPreflightEvidence(options.provider, options.model)
     : rawPreflightEvidence;
+
+  if (
+    options.provider === "grok" &&
+    !passed &&
+    preflightResult.cancelledBy === null &&
+    !preflightResult.timedOut &&
+    preflightFailureStatus(options.provider, options.model, rawPreflightEvidence) ===
+      "unauthenticated"
+  ) {
+    preflightState = {
+      argv: [preflightExecutable, ...preflight.args],
+      status: "failed",
+      evidence: rawPreflightEvidence,
+    };
+    progress.preflight = preflightState;
+
+    const retryWait = await waitForGrokPreflightRetry(deadlineAt, cancellation);
+    if (retryWait !== "ready") {
+      preflightState = {
+        ...preflightState,
+        status: retryWait === "cancelled" ? "cancelled" : "timed-out",
+      };
+      progress.preflight = preflightState;
+      return finishWithoutChild(
+        retryWait === "cancelled" ? "cancelled" : "timed-out",
+        "during authentication preflight retry delay"
+      );
+    }
+
+    const firstPreflightEvidence = rawPreflightEvidence;
+    preflightResult = await runProcess(
+      preflightExecutable,
+      preflight,
+      options.cwd,
+      env,
+      "",
+      deadlineAt,
+      cancellation
+    );
+    rawPreflightEvidence = evidence(`${preflightResult.stdout}\n${preflightResult.stderr}`);
+    passed = preflightPassed(options.provider, options.model, preflightResult);
+    preflightEvidence = retriedPreflightEvidence(
+      firstPreflightEvidence,
+      passed
+        ? successfulPreflightEvidence(options.provider, options.model)
+        : rawPreflightEvidence,
+      passed
+    );
+  }
+
   preflightState = {
     argv: [preflightExecutable, ...preflight.args],
     status: preflightResult.cancelledBy !== null
@@ -582,16 +688,16 @@ async function executeLane(
 
   if (preflightState.status !== "passed") {
     const completed = Date.now();
-    const preflightFailure = unavailableStatus(preflightEvidence);
+    const preflightFailure = preflightFailureStatus(
+      options.provider,
+      options.model,
+      rawPreflightEvidence
+    );
     const status: ReceiptStatus = preflightResult.cancelledBy !== null
       ? "cancelled"
       : preflightResult.timedOut
         ? "timed-out"
-        : preflightFailure !== "child-failed"
-          ? preflightFailure
-          : options.provider === "grok" && !preflightEvidence.includes(options.model)
-            ? "unavailable-model"
-            : "unauthenticated";
+        : preflightFailure;
     receipt = completeReceipt(options, {
       status,
       startedAt,
