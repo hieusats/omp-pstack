@@ -104,6 +104,52 @@ else
   note "ok: default model quad identical across provider dispatch + 4 panel skills + setup-pstack ($canon_quad)"
 fi
 
+plugin="$repo/plugins/pstack"
+canon="$plugin/skills/poteto-mode/references/bugbot-triage.md"
+skill="$plugin/skills/babysit/SKILL.md"
+playbook="$plugin/skills/poteto-mode/playbooks/babysit.md"
+bugbot_skill_rel="../poteto-mode/references/bugbot-triage.md"
+bugbot_playbook_rel="../references/bugbot-triage.md"
+bugbot_bad=""
+if [ ! -f "$canon" ]; then
+  bugbot_bad="${bugbot_bad}canonical rubric missing: $canon"$'\n'
+fi
+skill_op="$(grep -F 'Review-bot comments (Bugbot and similar automation):' "$skill" || true)"
+skill_n="$(printf '%s\n' "$skill_op" | awk 'NF { c++ } END { print c+0 }')"
+if [ "$skill_n" != "1" ]; then
+  bugbot_bad="${bugbot_bad}standalone babysit skill lost bugbot-triage operational line"$'\n'
+else
+  skill_dest="$(printf '%s\n' "$skill_op" | sed -n 's/.*](\([^)]*\)).*/\1/p')"
+  if [ "$skill_dest" != "$bugbot_skill_rel" ]; then
+    bugbot_bad="${bugbot_bad}standalone babysit Markdown destination is [$skill_dest], not [$bugbot_skill_rel]"$'\n'
+  fi
+  if ! printf '%s\n' "$skill_op" | grep -Fq 'classify as fix, dismiss, or ask'; then
+    bugbot_bad="${bugbot_bad}standalone babysit lost fix/dismiss/ask classification"$'\n'
+  fi
+  if ! printf '%s\n' "$skill_op" | grep -Fq "Follow the rubric's Ask by default categories, including security, data, and high-severity findings."; then
+    bugbot_bad="${bugbot_bad}standalone babysit lost ask-by-default escalation"$'\n'
+  fi
+fi
+playbook_op="$(grep -E '^8\. \*\*Bugbot is triaged skeptically, always\.\*\*' "$playbook" || true)"
+playbook_n="$(printf '%s\n' "$playbook_op" | awk 'NF { c++ } END { print c+0 }')"
+if [ "$playbook_n" != "1" ]; then
+  bugbot_bad="${bugbot_bad}poteto-mode babysit playbook lost step-8 Bugbot operational line"$'\n'
+elif ! printf '%s\n' "$playbook_op" | grep -Fq "$bugbot_playbook_rel"; then
+  bugbot_bad="${bugbot_bad}poteto-mode babysit playbook step 8 lost bugbot-triage binding ($bugbot_playbook_rel)"$'\n'
+fi
+copies="$(find "$plugin" -name 'bugbot-triage.md' ! -path '*/node_modules/*' -print 2>/dev/null || true)"
+n="$(printf '%s\n' "$copies" | awk 'NF { c++ } END { print c+0 }')"
+if [ "$n" != "1" ]; then
+  bugbot_bad="${bugbot_bad}expected exactly 1 bugbot-triage.md under plugin, found $n"$'\n'
+fi
+if [ -n "$bugbot_bad" ]; then
+  note "FAIL: babysit Bugbot binding on the packaged plugin"
+  note "$bugbot_bad"
+  fail=1
+else
+  note "ok: babysit Bugbot binding on the packaged plugin"
+fi
+
 if [ "${PSTACK_STATIC_ONLY:-0}" = "1" ]; then
   exit "$fail"
 fi
