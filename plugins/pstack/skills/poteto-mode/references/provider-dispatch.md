@@ -6,16 +6,18 @@ pstack model choices are provider-qualified descriptors:
 <provider>:<model>@<effort>
 ```
 
-The frontier defaults are:
+## Model matrix
 
-| Upstream pstack choice | Portable descriptor |
-|---|---|
-| `claude-fable-5-thinking-max` | `claude:claude-fable-5@max` |
-| `gpt-5.6-sol-max` | `codex:gpt-5.6-sol@max` |
-| `grok-4.6-fast-xhigh` | `grok:grok-4.6@xhigh` |
-| `claude-opus-5-thinking-xhigh` | `claude:claude-opus-5@xhigh` |
+| Family | Upstream pstack choice | Provider | Model | Default effort | Selectable efforts | Claude-native agent stem |
+|---|---|---|---|---|---|---|
+| fable | claude-fable-5-thinking-max | claude | claude-fable-5 | max | low medium high xhigh max | fable |
+| sol | gpt-5.6-sol-max | codex | gpt-5.6-sol | max | low medium high xhigh max | - |
+| grok | grok-4.6-fast-xhigh | grok | grok-4.6 | xhigh | low medium high xhigh max | - |
+| opus | claude-opus-5-thinking-xhigh | claude | claude-opus-5 | xhigh | low medium high xhigh max | opus |
 
-`fast` is part of Cursor's Grok selector, not a Grok Build CLI model or effort flag. The portable route pins the current CLI model `grok-4.6` at `xhigh`.
+The allowed effort universe is exactly `low`, `medium`, `high`, `xhigh`, `max`. First-run requested efforts are the Default effort cell of each row. A Claude-native agent stem of `-` means the family has no Claude-native agent. Otherwise the shipped agent name is `pstack-<stem>-<effort>`.
+
+`fast` is part of Cursor's Grok selector, not a Grok Build CLI model or effort flag. The portable Grok route pins the current CLI model `grok-4.6`. The first-run Grok effort is `xhigh`.
 
 ## The parent owns the route
 
@@ -32,7 +34,7 @@ The top-level harness resolves the route once. A child receives an assigned prov
 
 Native dispatch avoids a second CLI startup and its base context.
 
-- Claude Code: use `pstack-fable-max` for `claude:claude-fable-5@max` and `pstack-opus-xhigh` for `claude:claude-opus-5@xhigh`. These shipped subagent definitions pin model, effort, and `background: true`. Pass the complete task, grounding paths, access mode, and unique output location in the `Agent` prompt. Retain the task handle and drain it only after fan-out.
+- Claude Code: match the descriptor's `(provider, model)` to one model-matrix row, then dispatch it through `pstack-<stem>-<effort>` using that row's Claude-native agent stem and the descriptor's effort. Those definitions pin model, effort, and `background: true`. `pstack-fable-max` and `pstack-opus-xhigh` remain in that set. Pass the complete task, grounding paths, access mode, and unique output location in the `Agent` prompt. Retain the task handle and drain it only after fan-out.
 - Codex: call `spawn_agent` with the descriptor's model and `reasoning_effort`, the complete task, grounding paths, access mode, and unique output location. Use an isolated worktree for a writer. Codex subagents already run concurrently.
 
 Do not send a same-provider descriptor to the external runner. It rejects that call because the native route is cheaper and already available.

@@ -145,4 +145,36 @@ describe("invocationCommand", () => {
       ])
     );
   });
+
+  it("covers low, medium, and high for every external provider", () => {
+    const cases = [
+      {
+        provider: "claude" as const,
+        model: "claude-fable-5",
+        flag: (effort: "low" | "medium" | "high") => ["--effort", effort],
+      },
+      {
+        provider: "codex" as const,
+        model: "gpt-5.6-sol",
+        flag: (effort: "low" | "medium" | "high") => [
+          "--config",
+          `model_reasoning_effort="${effort}"`,
+        ],
+      },
+      {
+        provider: "grok" as const,
+        model: "grok-4.6",
+        flag: (effort: "low" | "medium" | "high") => [
+          "--reasoning-effort",
+          effort,
+        ],
+      },
+    ];
+    for (const { provider, model, flag } of cases) {
+      for (const effort of ["low", "medium", "high"] as const) {
+        const spec = invocationCommand(options({ provider, model, effort }));
+        expect(spec.args).toEqual(expect.arrayContaining(flag(effort)));
+      }
+    }
+  });
 });

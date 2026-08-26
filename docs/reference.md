@@ -2,7 +2,7 @@
 
 This page contains the full skill, dependency, runtime, and porting reference. For the plain-English introduction and quick start, see the [main README](../README.md).
 
-[Poteto](https://x.com/poteto)'s [pstack](https://github.com/cursor/plugins/tree/main/pstack), adapted to run in Claude Code and Codex without Cursor. One shared skill tree serves both harnesses; Grok remains available as a model-provider lane. Version 1.0.2 is synced to Cursor pstack v0.14.2 at `46125561306434d8a1d7745d540d8932ab0cd2a2`. See [UPSTREAM.md](../UPSTREAM.md) for the exact sync contract.
+[Poteto](https://x.com/poteto)'s [pstack](https://github.com/cursor/plugins/tree/main/pstack), adapted to run in Claude Code and Codex without Cursor. One shared skill tree serves both harnesses; Grok remains available as a model-provider lane. Version 1.1.0 is synced to Cursor pstack v0.14.2 at `46125561306434d8a1d7745d540d8932ab0cd2a2`. See [UPSTREAM.md](../UPSTREAM.md) for the exact sync contract.
 
 Original by Lauren Tan. This distribution builds on Michael Denyer's [pstack-claude](https://github.com/michael-denyer/pstack-claude) port and retains its history and MIT attribution. It imports seven MIT-licensed skills from [cursor-team-kit](https://github.com/cursor/plugins/tree/main/cursor-team-kit): `deslop`, `thermo-nuclear-code-quality-review`, `make-pr-easy-to-review`, `fix-ci`, `fix-merge-conflicts`, `get-pr-comments`, `what-did-i-get-done`.
 
@@ -63,7 +63,7 @@ The marketplace install is the normal user path. Direct links are only for testi
 │   │   ├── poteto-mode/references/{codex-tools,provider-dispatch}.md  # tool + provider routing
 │   │   └── poteto-mode/scripts/      # bun/bash tooling: watch-pr, orch, runner, worktree-audit.sh
 │   ├── hooks/                        # SessionStart auto-fire: injects the poteto-mode mandate (Claude Code only)
-│   └── agents/                       # Claude subagents, including native Fable-max and Opus-xhigh lanes
+│   └── agents/                       # Claude subagents, including native Fable and Opus lanes at each selectable effort
 ├── tests/skill-collision-repro.sh    # native-skill package invariants and Claude invocation checks
 ├── LICENSE                           # pstack upstream MIT
 ├── LICENSE-cursor-team-kit           # cursor-team-kit upstream MIT
@@ -86,7 +86,7 @@ The Codex build shares one `skills/` tree with the Claude Code build. Nothing is
 - **Tool and built-in mapping.** Claude tool names and built-in skills resolve through [`codex-tools.md`](../plugins/pstack/skills/poteto-mode/references/codex-tools.md). Model execution resolves separately through [`provider-dispatch.md`](../plugins/pstack/skills/poteto-mode/references/provider-dispatch.md), so Codex can keep Sol native while invoking Claude and Grok externally.
 - **Subagents.** The `Agent` tool maps to Codex `spawn_agent` / `wait_agent`, enabled by `multi_agent = true`. Parallel fan-out is multiple `spawn_agent` calls in one turn. If the native Codex lane is unavailable, record that lane as a dropout; external Claude and Grok lanes still run, and no provider is silently substituted. There is no `poteto-agent` subagent type on Codex; route ad-hoc subagents by dispatching a `spawn_agent` told to read `poteto-mode` first.
 - **Auto-fire.** The `hooks/` SessionStart injection is Claude Code-only; Codex has no plugin hook runtime. Enter `pstack:poteto-mode` by name, or add a standing instruction to `~/.codex/AGENTS.md` if you want the same always-on routing.
-- **Models.** `/setup-pstack` writes provider-qualified descriptors. The default panel is Fable 5 max, GPT-5.6 Sol max, Grok 4.6 xhigh, and Opus 5 xhigh. In Codex, Sol uses native `spawn_agent`; Claude and Grok use the deterministic external runner. In Claude Code, Fable and Opus use native agents; Sol and Grok use the runner. Children never detect the parent or reroute themselves.
+- **Models.** `/setup-pstack` writes provider-qualified descriptors and asks one requested effort per frontier family (`low`, `medium`, `high`, `xhigh`, `max`). The first-run panel is Fable 5 max, GPT-5.6 Sol max, Grok 4.6 xhigh, and Opus 5 xhigh. A rerun keeps each role's family and rewrites that family's effort. In Codex, Sol uses native `spawn_agent`; Claude and Grok use the deterministic external runner. In Claude Code, Fable and Opus use native agents; Sol and Grok use the runner. Children never detect the parent or reroute themselves.
 
 Verified in fresh installed Claude Code and Codex sessions: the user-facing skills are discovered and namespaced under `pstack`; both parents fan out the frontier quad through the documented native/external route table, retain long-running handles without a default timeout, and cross-judge only after every candidate is terminal. The `principle-*` leaves remain available for `poteto-mode` to read by path. Claude honors their `user-invocable: false` metadata; Codex 0.149.0 does not ([#8](https://github.com/ericlitman/open-pstack/issues/8)).
 
@@ -138,7 +138,7 @@ The table uses the short upstream names. Claude Code exposes each native skill w
 | `/show-me-your-work` | log decisions to a reviewable tsv decision trail |
 | `/blast-radius` | find what a change could break beyond the diff and prove safety by running code |
 | `/recall` | catch up on recent working context from chat history, live state, and the shared record |
-| `/setup-pstack` | configure pstack per-role model choices |
+| `/setup-pstack` | configure pstack per-role model choices and per-family requested effort |
 | `/unslop` | clean up writing by removing AI tells |
 | `/no-comments` | strip comments before review via the `comment-sicko` subagent, then fix what it finds |
 | `/create-verification-skill` | generate a project-local verification skill and feature map |
@@ -158,7 +158,7 @@ The table uses the short upstream names. Claude Code exposes each native skill w
 
 `comment-sicko` is the read-only comment reviewer the `no-comments` skill spawns. Upstream names it `Comment Sicko`; the port renames it to `comment-sicko` so the name is a valid `subagent_type`. Invoke it through `/no-comments`, not directly.
 
-`pstack-fable-max` and `pstack-opus-xhigh` pin both model and effort for Claude-native frontier lanes. pstack dispatches them from provider-qualified descriptors; they are not user-facing workflows.
+Fable and Opus each ship at `low`, `medium`, `high`, `xhigh`, and `max`. Names are `pstack-<stem>-<effort>`. `pstack-fable-max` and `pstack-opus-xhigh` remain. Each file pins model and effort, runs in the background, and denies nested Agent/Task dispatch. pstack dispatches them from provider-qualified descriptors; they are not user-facing workflows.
 
 ## Differences from upstream
 

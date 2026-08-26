@@ -122,7 +122,7 @@ Plugin skills include `pstack:` in their name. In Claude Code, invoke a native s
 
 Some pstack workflows use one model. Skills such as `architect`, `arena`, and `interrogate` can run several models in parallel. Each model run uses the subscription and token allowance of its own command-line tool.
 
-`setup-pstack` lets you choose the models and how many run in parallel. A model from the app you are using runs inside that app. Other models run through their own command-line tools. Open Pstack does not quietly replace a failed model with a weaker one.
+`setup-pstack` lets you choose the models, one requested effort per model family, and how many run in parallel. A model from the app you are using runs inside that app. Other models run through their own command-line tools. Open Pstack does not quietly replace a failed model with a weaker one.
 
 ## Claude Code and Codex
 
@@ -151,7 +151,7 @@ This repository also keeps:
 
 ## Staying close to Lauren's pstack
 
-Open Pstack 1.0.2 tracks pstack 0.14.2 at Cursor commit [`46125561306434d8a1d7745d540d8932ab0cd2a2`](https://github.com/cursor/plugins/commit/46125561306434d8a1d7745d540d8932ab0cd2a2).
+Open Pstack 1.1.0 tracks pstack 0.14.2 at Cursor commit [`46125561306434d8a1d7745d540d8932ab0cd2a2`](https://github.com/cursor/plugins/commit/46125561306434d8a1d7745d540d8932ab0cd2a2).
 
 The two projects have separate version numbers. The pstack version identifies Lauren's upstream content. The Open Pstack version identifies the Claude Code and Codex package built from it.
 

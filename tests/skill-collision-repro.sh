@@ -47,12 +47,31 @@ fi
 
 # Static invariant (CHANGES maintenance note): provider-dispatch owns the default
 # provider/model quad and the four panel skills plus setup-pstack copy it verbatim.
-# Derive the canonical ordered quad from provider-dispatch and assert every copy
-# matches, so a partial model bump fails here instead of drifting silently.
 setup="$repo/plugins/pstack/skills/setup-pstack/SKILL.md"
 dispatch="$repo/plugins/pstack/skills/poteto-mode/references/provider-dispatch.md"
 quad_of() { { grep -oE '(claude|codex|grok):[a-z0-9.-]+@(low|medium|high|xhigh|max)' || true; } | tr '\n' ' ' | sed 's/ $//'; }
-canon_quad="$(sed -n '/^The frontier defaults are:/,/^## /p' "$dispatch" | quad_of || true)"
+canon_quad="$(awk '
+  $0 == "## Model matrix" { in_matrix = 1; next }
+  in_matrix && /^## / { exit }
+  in_matrix && /^\|/ {
+    line = $0
+    sub(/^\|/, "", line)
+    sub(/\|$/, "", line)
+    n = split(line, cells, "|")
+    for (i = 1; i <= n; i++) {
+      gsub(/^ +| +$/, "", cells[i])
+      gsub(/`/, "", cells[i])
+    }
+    family = cells[1]
+    if (family == "Family" || family ~ /^:?-+:?$/) next
+    provider = cells[3]
+    model = cells[4]
+    effort = cells[5]
+    if (out != "") out = out " "
+    out = out provider ":" model "@" effort
+  }
+  END { print out }
+' "$dispatch")"
 quad_bad=""
 [ -n "$canon_quad" ] || quad_bad="could not read the canonical quad from $dispatch"$'\n'
 # Anchor on the quad's last slug rather than a hard-coded one, so a model swap in
@@ -73,8 +92,6 @@ done
 interrogate="$repo/plugins/pstack/skills/interrogate/SKILL.md"
 got="$(grep -E '^\| Reviewer [A-Z] \|' "$interrogate" | quad_of)"
 [ "$got" = "$canon_quad" ] || quad_bad="$quad_bad$interrogate reviewer table: [$got] != [$canon_quad]"$'\n'
-# The setup-pstack role rows must all carry the same quad (excludes the line 24
-# "currently available" enumeration, which is a different, longer list by design).
 while IFS= read -r line; do
   got="$(printf '%s\n' "$line" | quad_of)"
   [ "$got" = "$canon_quad" ] || quad_bad="$quad_bad$setup role row: [$got] != [$canon_quad]"$'\n'
