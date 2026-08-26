@@ -104,6 +104,127 @@ else
   note "ok: default model quad identical across provider dispatch + 4 panel skills + setup-pstack ($canon_quad)"
 fi
 
+# Dual Babysit entry points share one bugbot-triage.md. A second copy or a
+# dropped relative path lets standalone /babysit apply a weaker policy.
+bugbot_skill_rel="../poteto-mode/references/bugbot-triage.md"
+bugbot_playbook_rel="../references/bugbot-triage.md"
+
+check_bugbot_triage_binding() {
+  local plugin="$1"
+  local bad=""
+  local canon="$plugin/skills/poteto-mode/references/bugbot-triage.md"
+  local skill="$plugin/skills/babysit/SKILL.md"
+  local playbook="$plugin/skills/poteto-mode/playbooks/babysit.md"
+  local copies n canon_abs resolved_dir resolved_abs
+
+  if [ ! -f "$canon" ]; then
+    bad="${bad}canonical rubric missing: $canon"$'\n'
+  fi
+  if [ ! -f "$skill" ]; then
+    bad="${bad}standalone babysit skill missing: $skill"$'\n'
+  elif ! grep -Fq "$bugbot_skill_rel" "$skill"; then
+    bad="${bad}standalone babysit skill lost bugbot-triage binding ($bugbot_skill_rel)"$'\n'
+  fi
+  if [ ! -f "$playbook" ]; then
+    bad="${bad}poteto-mode babysit playbook missing: $playbook"$'\n'
+  elif ! grep -Fq "$bugbot_playbook_rel" "$playbook"; then
+    bad="${bad}poteto-mode babysit playbook lost bugbot-triage binding ($bugbot_playbook_rel)"$'\n'
+  fi
+  if [ ! -f "$plugin/skills/babysit/$bugbot_skill_rel" ]; then
+    bad="${bad}standalone relative link does not resolve: $bugbot_skill_rel"$'\n'
+  elif [ -f "$canon" ]; then
+    canon_abs="$(cd "$(dirname "$canon")" && pwd)/$(basename "$canon")"
+    resolved_dir="$(cd "$plugin/skills/babysit/$(dirname "$bugbot_skill_rel")" && pwd)"
+    resolved_abs="$resolved_dir/$(basename "$bugbot_skill_rel")"
+    if [ "$canon_abs" != "$resolved_abs" ]; then
+      bad="${bad}standalone relative link resolves to $resolved_abs, not $canon_abs"$'\n'
+    fi
+  fi
+  copies="$(find "$plugin" -name 'bugbot-triage.md' -print 2>/dev/null || true)"
+  n="$(printf '%s\n' "$copies" | awk 'NF { c++ } END { print c+0 }')"
+  if [ "$n" != "1" ]; then
+    bad="${bad}expected exactly 1 bugbot-triage.md under plugin, found $n"$'\n'
+    if [ -n "$copies" ]; then
+      bad="${bad}$copies"$'\n'
+    fi
+  fi
+  if [ -n "$bad" ]; then
+    printf '%s' "$bad"
+    return 1
+  fi
+  return 0
+}
+
+write_valid_bugbot_plugin() {
+  local plugin="$1"
+  mkdir -p "$plugin/skills/babysit" \
+    "$plugin/skills/poteto-mode/playbooks" \
+    "$plugin/skills/poteto-mode/references"
+  printf '%s\n' "per [$bugbot_skill_rel]($bugbot_skill_rel)" > "$plugin/skills/babysit/SKILL.md"
+  printf '%s\n' "per \`$bugbot_playbook_rel\`" > "$plugin/skills/poteto-mode/playbooks/babysit.md"
+  printf '%s\n' "# rubric" > "$plugin/skills/poteto-mode/references/bugbot-triage.md"
+}
+
+expect_bugbot_ok() {
+  local label="$1"
+  local plugin="$2"
+  local bad=""
+  local rc=0
+  bad="$(check_bugbot_triage_binding "$plugin")" || rc=$?
+  if [ "$rc" -eq 0 ]; then
+    note "ok: $label"
+  else
+    note "FAIL: $label"
+    note "$bad"
+    fail=1
+  fi
+}
+
+expect_bugbot_fail() {
+  local label="$1"
+  local plugin="$2"
+  local rc=0
+  check_bugbot_triage_binding "$plugin" >/dev/null || rc=$?
+  if [ "$rc" -eq 0 ]; then
+    note "FAIL: $label: expected a binding error, check passed"
+    fail=1
+  else
+    note "ok: $label"
+  fi
+}
+
+expect_bugbot_ok "babysit Bugbot binding on the packaged plugin" "$repo/plugins/pstack"
+
+bugbot_fx="$(mktemp -d)"
+write_valid_bugbot_plugin "$bugbot_fx/ok"
+expect_bugbot_ok "valid babysit Bugbot fixture" "$bugbot_fx/ok"
+
+write_valid_bugbot_plugin "$bugbot_fx/missing-canon"
+rm -f "$bugbot_fx/missing-canon/skills/poteto-mode/references/bugbot-triage.md"
+expect_bugbot_fail "canonical rubric absent" "$bugbot_fx/missing-canon"
+
+write_valid_bugbot_plugin "$bugbot_fx/skill-unbound"
+printf '%s\n' "no rubric link" > "$bugbot_fx/skill-unbound/skills/babysit/SKILL.md"
+expect_bugbot_fail "standalone babysit lost the Bugbot binding" "$bugbot_fx/skill-unbound"
+
+write_valid_bugbot_plugin "$bugbot_fx/playbook-unbound"
+printf '%s\n' "no rubric link" > "$bugbot_fx/playbook-unbound/skills/poteto-mode/playbooks/babysit.md"
+expect_bugbot_fail "poteto-mode babysit playbook lost the Bugbot binding" "$bugbot_fx/playbook-unbound"
+
+write_valid_bugbot_plugin "$bugbot_fx/broken-link"
+rm -f "$bugbot_fx/broken-link/skills/poteto-mode/references/bugbot-triage.md"
+mkdir -p "$bugbot_fx/broken-link/skills/poteto-mode/other"
+printf '%s\n' "# rubric" > "$bugbot_fx/broken-link/skills/poteto-mode/other/bugbot-triage.md"
+expect_bugbot_fail "standalone relative Bugbot link does not resolve" "$bugbot_fx/broken-link"
+
+write_valid_bugbot_plugin "$bugbot_fx/extra-copy"
+mkdir -p "$bugbot_fx/extra-copy/skills/babysit/references"
+cp "$bugbot_fx/extra-copy/skills/poteto-mode/references/bugbot-triage.md" \
+  "$bugbot_fx/extra-copy/skills/babysit/references/bugbot-triage.md"
+expect_bugbot_fail "extra bugbot-triage.md copy under the plugin" "$bugbot_fx/extra-copy"
+
+rm -rf "$bugbot_fx"
+
 if [ "${PSTACK_STATIC_ONLY:-0}" = "1" ]; then
   exit "$fail"
 fi
