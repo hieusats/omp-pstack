@@ -2,6 +2,13 @@ import { createHash } from "node:crypto";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
+if (typeof Bun === "undefined") {
+  console.error(
+    "pstack poteto-mode tooling requires Bun (https://bun.sh). Install Bun, then re-run."
+  );
+  process.exit(1);
+}
+
 const scriptsDirectory = import.meta.dir;
 const nodeModulesDirectory = join(scriptsDirectory, "node_modules");
 const commanderPackagePath = join(
