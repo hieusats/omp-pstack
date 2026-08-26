@@ -4,10 +4,10 @@
 
 1. When the change is one or two files with an obvious approach, skip the plan. Say so and stop.
 2. Settle open questions by prototype before you write. For a question about layout, timing, behavior, or whether an API works, run `playbooks/prototype.md`. Keep the branch, the SHA, and the screenshots for Appendix A. Ask the operator only about a product or preference call that no run can settle. Give options (the **never-block-on-the-human** principle skill).
-3. Explore in subagents. Resolve the configured role through [`../references/provider-dispatch.md`](../references/provider-dispatch.md). Use `poteto-agent` only for an unqualified `inherit-parent` / `auto` native helper. Never use Claude Code's built-in `Plan` agent. It ignores this skill (the **guard-the-context-window** principle skill). Each explorer returns file pointers, conventions, test commands, and entry points. No inlined dumps. Children do not detect the parent harness or choose a route. Preserve the selected effort. A dropout stays a dropout. Do not add an implicit timeout.
+3. Explore in subagents. Resolve the configured `judgment and prose` role through [`../references/provider-dispatch.md`](../references/provider-dispatch.md). Use `poteto-agent` only for an unqualified `inherit-parent` / `auto` native helper. Never use Claude Code's built-in `Plan` agent. It ignores this skill (the **guard-the-context-window** principle skill). Each explorer returns file pointers, conventions, test commands, and entry points. No inlined dumps. Children do not detect the parent harness or choose a route. Preserve the selected effort. A dropout stays a dropout. Do not add a fallback or an implicit timeout.
 4. Copy the skeleton below into the plan file and fill every placeholder. Unless the operator names a path, write the file under the working repository's `docs/`. Keep every heading and every sub-block in the order shown. One section per PR. One PR is one change with its own evidence (the **sequence-verifiable-units** principle skill). Name the execution playbook in **How to read this**. Pick between `playbooks/autopilot-full.md` and `playbooks/autopilot-stack.md` per the rule at the end of `playbooks/autopilot-stack.md`. A standing program takes `playbooks/orchestrate.md`.
 5. Write under `/technical-writing` in full, then `/unslop`. The body is one Diátaxis mode, how-to. Appendices hold explanation and reference. Two rules apply verbatim. "i dont want any abstract metaphors" and "write like hemingway". Each heading states the task or the finding. No long dashes. No mid-sentence colons.
-6. Run `node skills/poteto-mode/scripts/check-plan.mjs <plan.md>` under the installed plugin and fix every line it prints (the **encode-lessons-in-structure** principle skill). It enforces the skeleton's shape, the verification rule in every verification block, and the punctuation rules. The playbook file is not checker input. Copy or extract the fenced skeleton first.
+6. Run `node skills/poteto-mode/scripts/check-plan.mjs <plan.md>` under the installed plugin and fix every line it prints (the **encode-lessons-in-structure** principle skill). It enforces the skeleton's shape, the verification rule in every verification block, and the punctuation rules. The playbook file is not checker input. Check the plan file created in step 4.
 7. Hand back. Post the plan path and the script's output, then stop. Execution starts on the operator's explicit go, under the execution playbook the plan names.
 
 **Verification.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked (the **prove-it-works** principle skill). That sentence is the verification rule. Every verification block opens with it. The live block is mandatory. Ten lanes on the configured `swarm workers` role at the PR head drive the real surface through the driver skill, per the **swarm** skill. The role resolves once through [`../references/provider-dispatch.md`](../references/provider-dispatch.md) at execution time, and each lane's receipt records the selected provider, model, and effort. Each lane is one box with a concrete scenario, the screenshot it saves, and its pass predicate. The perf block names the metric, the probe, the trunk baseline measured first, and the rule with the number that fails. A PR that changes an interaction is review-gated. The operator reviews it in chat with screenshots and a video before merge. A PR that changes no interaction writes `**Review gate.** None. <PR id> is not review-gated.` and no boxes under it.
@@ -33,8 +33,8 @@ Tests alone are not sufficient verification. A PR is verified only when its unit
 
 ### Arm the program
 
-- [ ] State the protocol and this plan to the operator, then stop. Start execution only on her explicit go.
-- [ ] On her go, write the program objective into the standing orders and your todolist with this exact text. "<The plan path, the PR ids in order, the verification rule, who merges, and the done condition.>"
+- [ ] State the protocol and this plan to the operator, then stop. Start execution only on the operator's explicit go.
+- [ ] On the operator's go, write the program objective into the standing orders and your todolist with this exact text. "<The plan path, the PR ids in order, the verification rule, who merges, and the done condition.>"
 - [ ] Read these from the installed plugin at program start. Re-read them at every tick.
   - [ ] `skills/poteto-mode/playbooks/<execution playbook>.md`
   - [ ] `skills/swarm/SKILL.md`
@@ -75,7 +75,7 @@ Each live lane is one `swarm workers` lane at the PR head, resolved through prov
 - [ ] `git fetch origin <head-branch> && git checkout <head SHA>` in the lane's worktree.
 - [ ] <Start the backend and the surface. Wait for ready.>
 - [ ] <Deliver input only through the driver skill's commands. Name the read-only diagnostics.>
-- [ ] Save every screenshot to `/tmp/swarm-<pr-id>/worker-<n>/<slug>.png` and return the paths with the receipt path.
+- [ ] Save every screenshot to `<scratch path>/swarm-<pr-id>/worker-<n>/<slug>.png` and return the paths with the receipt path.
 
 ## <Task as a verb phrase> (<PR id>)
 
@@ -117,7 +117,7 @@ Each live lane is one `swarm workers` lane at the PR head, resolved through prov
 - [ ] Metric. <What is measured.>
 - [ ] Probe. <The command or procedure, run at trunk and at the head, interleaved.>
 - [ ] Baseline. Record the trunk <value> first.
-- [ ] Rule. <Head against trunk, with the number that fails.>
+- [ ] Rule. <Head against trunk, with the number that fails, such as 20.>
 
 **Review gate.** The operator reviews before merge.
 

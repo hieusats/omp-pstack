@@ -12,7 +12,7 @@ open-pstack tracks [Cursor's pstack](https://github.com/cursor/plugins/tree/main
 | Upstream version | `0.14.3` |
 | open-pstack version | `1.1.0` |
 
-The same Cursor commit remains the sync point for open-pstack 1.1.0. `README-UPSTREAM.md` preserves its pstack README verbatim. `CHANGES.md` and `NOTICE.md` describe the adaptations and provenance.
+The table above is the current Cursor sync point. Open Pstack 1.1.0 shipped against an earlier commit. The next release consolidates this 0.14.3 sync. `README-UPSTREAM.md` preserves its pstack README verbatim. `CHANGES.md` and `NOTICE.md` describe the adaptations and provenance.
 
 ## Check for changes
 
