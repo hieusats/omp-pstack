@@ -2,6 +2,14 @@
 
 This port applies the Cursor → Claude Code substitutions in skill bodies. Earlier drafts left them flagged; this revision resolves them. A later pass added a Codex build that shares the same skills; see [Codex port](#codex-port) below.
 
+## 1.2.0 adds verified multi-PR plans, earlier runtime diagnostics, and shared review-bot triage
+
+Plans with several stages now use one checklist instead of an overview and separate files for each stage. It has one ordered section for every pull request and keeps all ten ways of testing the real product, unit tests, live and performance proof, checks for how changes work together, merge rules, and supporting details in one place. A Node-based checker with no extra dependencies rejects missing or out-of-order sections, fake screenshots, empty definitions of success, incomplete performance proof, incorrectly written review checks, unsupported punctuation, and incorrect command use. Claude Code and Codex use the same installed skill and checker through their existing parent-controlled setup. If a provider fails, it is identified by name and treated as a dropout. No backup provider or hidden time limit was added.
+
+The shared startup script now checks for Node before using features that only Bun provides. If the startup script or watcher is run with Node, it prints one clear message and exits cleanly instead of failing later because `Bun` does not exist. The normal Bun behavior and every existing test for runners, watchers, and orchestrators are unchanged. CI uses Node 22.23.2 so this behavior is always checked against the same known version.
+
+The separate Babysit skill now follows the same three-choice rule as poteto-mode Babysit: fix the problem, dismiss it, or ask what to do. Both versions point to one official Bugbot policy. A check of the packaged files confirms that both links work, only one copy of the policy exists, all three choices are present, and the listed situations default to asking, so the two versions cannot quietly become different.
+
 ## 1.1.0 adds selectable requested effort to setup-pstack
 
 `setup-pstack` asks one requested effort per frontier family (`low`, `medium`, `high`, `xhigh`, `max`) instead of probing a fixed default quartet. `provider-dispatch.md` owns the model matrix: family, upstream choice, provider, model, first-run default effort, selectable efforts, and Claude-native agent stem. Setup loads the current sheet first, folds mixed per-family efforts with an explicit operator choice, probes only the four requested pairs, and writes nothing on a failed probe. A rerun rewrites that family's `@effort` suffix on every assigned role and leaves customized role-to-family lanes in place. First-run defaults remain Fable `max`, Sol `max`, Grok `xhigh`, and Opus `xhigh`.
