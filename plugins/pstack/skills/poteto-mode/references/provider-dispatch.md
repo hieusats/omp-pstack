@@ -27,6 +27,7 @@ The top-level harness resolves the route once. A child receives an assigned prov
 |---|---|---|---|
 | Claude Code | native `Agent` | external runner | external runner |
 | Codex | external runner | native `spawn_agent` | external runner |
+| omp | native `task` lane | external runner | external runner |
 
 `inherit-parent` and `auto` remain aliases. They use the parent's current model and effort through its native subagent primitive. In a panel they still consume one lane, but they reduce provider diversity; say so in the synthesis record.
 
@@ -36,6 +37,7 @@ Native dispatch avoids a second CLI startup and its base context.
 
 - Claude Code: match the descriptor's `(provider, model)` to one model-matrix row, then dispatch it through `pstack-<stem>-<effort>` using that row's Claude-native agent stem and the descriptor's effort. Those definitions pin model, effort, and `background: true`. `pstack-fable-max` and `pstack-opus-xhigh` remain in that set. Pass the complete task, grounding paths, access mode, and unique output location in the `Agent` prompt. Retain the task handle and drain it only after fan-out.
 - Codex: call `spawn_agent` with the descriptor's model and `reasoning_effort`, the complete task, grounding paths, access mode, and unique output location. Use an isolated worktree for a writer. Codex subagents already run concurrently.
+- omp: dispatch `pstack-<stem>-<effort>` as native `task` agents — the same shipped definitions, discovered from the plugin's `agents/` directory. Model and effort resolution comes from `task.agentModelOverrides` in `~/.omp/agent/config.yml`, written by the omp route of `setup-pstack`. omp silently runs a lane on the parent model when its mapping is missing, so treat an unmapped lane as unconfigured, never as `inherit-parent`. Fan out with one multi-item `task` dispatch; results arrive as background job results and are drained after fan-out.
 
 Do not send a same-provider descriptor to the external runner. It rejects that call because the native route is cheaper and already available.
 

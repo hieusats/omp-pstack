@@ -39,8 +39,8 @@ You need a current Claude Code or Codex installation. For the full four-model re
 Run these commands inside Claude Code:
 
 ```text
-/plugin marketplace add ericlitman/open-pstack
-/plugin install pstack@open-pstack
+/plugin marketplace add hieusats/omp-pstack
+/plugin install pstack@omp-pstack
 /reload-plugins
 ```
 
@@ -49,8 +49,8 @@ Run these commands inside Claude Code:
 Run these commands in your shell:
 
 ```shell
-codex plugin marketplace add ericlitman/open-pstack --ref main
-codex plugin add pstack@open-pstack
+codex plugin marketplace add hieusats/omp-pstack --ref main
+codex plugin add pstack@omp-pstack
 ```
 
 Turn on Codex subagents in `~/.codex/config.toml` so pstack can compare work in parallel:
@@ -62,7 +62,19 @@ multi_agent = true
 
 Start a new Codex task after installation so it can discover the new skills and setting.
 
+### omp (Oh My Pi)
+
+This fork targets omp alongside Claude Code and Codex. Run these commands in your shell:
+
+```shell
+omp plugin marketplace add hieusats/omp-pstack
+omp plugin install pstack@omp-pstack
+```
+
+omp discovers the skills under flat names (`/skill:architect`, `skill://poteto-mode` — no `pstack:` prefix) and the twelve agents natively. omp does not execute Claude Code `hooks.json`, so copy the startup mandate from [docs/omp.md](docs/omp.md) into `~/.omp/agent/AGENTS.md`, then run setup-pstack's omp route to map the model lanes in `~/.omp/agent/config.yml`.
+
 ## Get started
+
 
 Lauren's original setup has two steps. Open Pstack keeps the same flow.
 
