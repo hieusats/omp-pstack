@@ -1,9 +1,9 @@
 {
-  "name": "open-pstack",
+  "name": "omp-pstack",
   "owner": {
     "name": "Eric Litman"
   },
-  "description": "Pstack for Claude Code and Codex, tracking Cursor's upstream pstack.",
+  "description": "Pstack for Claude Code, Codex, and omp, tracking Cursor's upstream pstack.",
   "plugins": [
     {
       "name": "pstack",

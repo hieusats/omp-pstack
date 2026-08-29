@@ -1,6 +1,6 @@
 # Codex tool mapping for pstack
 
-pstack skills retain Claude Code tool language (`Skill`, `Agent`, `AskUserQuestion`) in shared prose. On Codex the files are the same; only those tool names resolve differently. Model execution is not translated here. Read [`provider-dispatch.md`](provider-dispatch.md) for the parent-owned Claude/Codex/Grok route table and provider-qualified descriptors.
+pstack skills retain Claude Code tool language (`Skill`, `Agent`, `AskUserQuestion`) in shared prose. On Codex and omp the files are the same; only those tool names resolve differently. Model execution is not translated here. Read [`provider-dispatch.md`](provider-dispatch.md) for the parent-owned Claude/Codex/Grok/omp route table and provider-qualified descriptors.
 
 ## Tool actions
 
@@ -28,6 +28,25 @@ multi_agent = true
 ```
 
 Without it, the native Codex lane is a named dropout. Independent external lanes still run, and the parent records the reduced provider count. Never collapse a panel into a sequential single-model pass.
+
+## omp tool mapping
+
+| pstack / Claude action | omp equivalent |
+|------------------------|----------------|
+| Read a file | `read` (structural summary; selectors like `:raw` or `:50-100` for verbatim) |
+| Create / edit / delete a file | `write` / `edit` |
+| Run a shell command | `bash` |
+| Search file contents / find files | `grep` / `glob` |
+| Fetch a URL | `read` the URL |
+| Search the web | `web_search` |
+| Invoke a skill (the `Skill` tool, `/command`) | Skills load natively: read `skill://<name>`; the user types `/skill:<name>` (flat names, no `pstack:` prefix) |
+| Dispatch a subagent (the `Agent`/`Task` tool) | `task` with `agent` set |
+| Dispatch N parallel subagents in one turn | one `task` call with N `tasks[]` items |
+| Wait for a subagent result | results auto-deliver; `hub` with `wait` blocks when there is no other work |
+| Track tasks (the todolist / `TodoWrite`) | `todo` |
+| Ask the human a fixed-choice question (`AskUserQuestion`) | `ask` |
+
+omp discovers every definition in the plugin's `agents/` directory — `poteto-agent`, `comment-sicko`, and the ten `pstack-<stem>-<effort>` lanes — as native task agents, so dispatch by name exactly like Claude Code. The lanes' model and effort come from `task.agentModelOverrides` in `~/.omp/agent/config.yml` (the omp route of `setup-pstack`); an unmapped lane silently runs on the parent model, which is a misconfiguration to report, not an inheritance to rely on. Where a pstack skill says "your instructions file", on omp that is `AGENTS.md` (project root, plus `~/.omp/agent/AGENTS.md` global).
 
 ## Subagent policy
 
