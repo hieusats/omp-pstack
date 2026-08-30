@@ -1,0 +1,83 @@
+{
+  "ompVersion": "18.0.11",
+  "commit": "51f03804476c3fd3c15748ae07e4849d1efc883b",
+  "agents": [
+    {
+      "name": "designer",
+      "model": "@designer",
+      "tools": null,
+      "spawns": []
+    },
+    {
+      "name": "librarian",
+      "model": "@smol",
+      "tools": [
+        "read",
+        "grep",
+        "glob",
+        "bash",
+        "lsp",
+        "web_search",
+        "ast_grep",
+        "yield"
+      ],
+      "spawns": []
+    },
+    {
+      "name": "reviewer",
+      "model": "@slow",
+      "tools": [
+        "read",
+        "grep",
+        "glob",
+        "bash",
+        "lsp",
+        "web_search",
+        "ast_grep",
+        "yield"
+      ],
+      "spawns": [
+        "scout"
+      ]
+    },
+    {
+      "name": "scout",
+      "model": "@smol",
+      "tools": [
+        "read",
+        "grep",
+        "glob",
+        "web_search",
+        "yield"
+      ],
+      "spawns": []
+    },
+    {
+      "name": "security-reviewer",
+      "model": null,
+      "tools": [
+        "read",
+        "grep",
+        "glob",
+        "lsp",
+        "ast_grep",
+        "yield"
+      ],
+      "spawns": []
+    },
+    {
+      "name": "sonic",
+      "model": "@smol",
+      "tools": null,
+      "spawns": []
+    },
+    {
+      "name": "task",
+      "model": "@task",
+      "tools": null,
+      "spawns": [
+        "*"
+      ]
+    }
+  ]
+}
