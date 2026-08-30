@@ -8,11 +8,11 @@ open-pstack tracks [Cursor's pstack](https://github.com/cursor/plugins/tree/main
 | --- | --- |
 | Repository | `https://github.com/cursor/plugins.git` |
 | Path | `pstack/` |
-| Commit | `bdf7aa355337897f167153e05069aca505dae17c` |
-| Upstream version | `0.14.3` |
-| open-pstack version | `1.2.0` |
+| Commit | `6fecddba65801f9b9c08b8b328d998ee5b09d290` |
+| Upstream version | `0.14.5` |
+| open-pstack version | `1.2.1` |
 
-The table above is the current Cursor sync point. Open Pstack 1.2.0 consolidates this 0.14.3 sync. `README-UPSTREAM.md` preserves its pstack README verbatim. `CHANGES.md` and `NOTICE.md` describe the adaptations and provenance.
+The table above is the current Cursor sync point. Open Pstack 1.2.1 records this 0.14.5 sync. The only content change upstream is the `make-bot-ui` skill, which is built on Cursor product primitives with no Claude Code, Codex, or omp equivalent (the `update_state` routine tool, the Routines panel, `api2.cursor.sh` webhooks, `SendToUser` secret-request cards), so it is deliberately not ported; see `CHANGES.md`. `README-UPSTREAM.md` preserves its pstack README verbatim. `CHANGES.md` and `NOTICE.md` describe the adaptations and provenance.
 
 ## Check for changes
 
