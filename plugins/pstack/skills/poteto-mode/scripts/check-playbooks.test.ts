@@ -165,3 +165,30 @@ describe("playbook cross-references resolve", () => {
     }
   });
 });
+
+describe("delegation defaults ride the omp lanes", () => {
+  const skill = readFileSync(join(import.meta.dir, "..", "SKILL.md"), "utf8");
+
+  it("maps code-writing playbooks onto the writer lane", () => {
+    for (const name of ["bug-fix", "feature", "perf-issue", "hillclimb"]) {
+      const text = playbook(name);
+      expect(text, name).toContain("omp's writer lane `pstack-task`");
+      expect(text, name).not.toMatch(
+        /configured (bug-fix|feature|perf-issue|hillclimb|refactoring) descriptor/,
+      );
+    }
+  });
+
+  it("maps refactoring's mechanical edits onto the mechanical lane", () => {
+    const text = playbook("refactoring");
+    expect(text).toContain("omp's mechanical lane `pstack-sonic`");
+    expect(text).not.toMatch(
+      /configured (bug-fix|feature|perf-issue|hillclimb|refactoring) descriptor/,
+    );
+  });
+
+  it("keeps external descriptors as explicit opt-ins in the defaults paragraph", () => {
+    expect(skill).toContain("Delegation defaults ride those lanes");
+    expect(skill).not.toContain("Upstream defaults use Grok 4.6 xhigh");
+  });
+});
