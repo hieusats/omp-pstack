@@ -25,6 +25,8 @@ jobs:
       - name: Test
         working-directory: plugins/pstack/skills/poteto-mode/scripts
         run: bun run test
+      - name: Repo invariants
+        run: bun test tests/
       - name: Typecheck
         working-directory: plugins/pstack/skills/poteto-mode/scripts
         run: bun run typecheck
