@@ -104,7 +104,7 @@ That is the main workflow. The other skills are there when poteto-mode needs the
 | `why` | You want evidence for why the system was built that way. |
 | `architect` | A change crosses a function or module boundary and the design needs to be settled first. |
 | `arena` | You want several complete attempts, followed by a comparison of their best parts. |
-| `interrogate` | You want different models to try to break a design or diff. |
+| `interrogate` | You want several independent reviewers to try to break a design or diff. |
 | `create-verification-skill` | Your project has no repeatable way for an agent to prove real behavior. |
 | `maintain-verification-skill` | The project's verification instructions no longer match the product. |
 | `babysit` | A pull request needs CI failures and review comments handled until it is ready. |
@@ -114,7 +114,7 @@ Invoke a skill as `/skill:<name>` (for example `/skill:architect`) or ask for it
 
 ## Models and token use
 
-Some pstack workflows use one model. Skills such as `architect`, `arena`, and `interrogate` can run several models in parallel. Each model run uses the subscription and token allowance of its own command-line tool.
+Some pstack workflows use one model. Skills such as `architect`, `arena`, and `interrogate` can run several reviewers or candidates in parallel, and by default they run them on the omp lane agents, so those runs use the omp subscription. An external provider-panel lane uses the subscription and token allowance of its own command-line tool.
 
 `setup-pstack` lets you choose the models, one requested effort per model family, and how many run in parallel. Lane agents mapped in `~/.omp/agent/config.yml` run as native omp task agents. Other models run through their own command-line tools. omp-pstack does not quietly replace a failed model with a weaker one.
 

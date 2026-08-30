@@ -9,6 +9,11 @@ const DISPATCH_PATH = join(
   "skills/poteto-mode/references/provider-dispatch.md"
 );
 const SETUP_PATH = join(PLUGIN_ROOT, "skills/setup-pstack/SKILL.md");
+const ARENA_PATH = join(PLUGIN_ROOT, "skills/arena/SKILL.md");
+const SWARM_PATH = join(PLUGIN_ROOT, "skills/swarm/SKILL.md");
+const HOW_PATH = join(PLUGIN_ROOT, "skills/how/SKILL.md");
+const INTERROGATE_PATH = join(PLUGIN_ROOT, "skills/interrogate/SKILL.md");
+const ARCHITECT_PATH = join(PLUGIN_ROOT, "skills/architect/SKILL.md");
 const AGENTS_DIR = join(PLUGIN_ROOT, "agents");
 
 const MATRIX_HEADER = [
@@ -331,5 +336,85 @@ describe("provider panel", () => {
     expect(setup).toContain(
       "`omp models` must list it, and its effort must be one of the thinking levels the registry lists for that model"
     );
+  });
+});
+
+describe("arena resolves its panel from the omp lane sheet", () => {
+  const arena = readFileSync(ARENA_PATH, "utf8");
+
+  it("picks runners from the live lane sheet, not a dead sheet row", () => {
+    expect(arena).toContain(
+      "`pstack-*` lane rows under `task.agentModelOverrides` in `~/.omp/agent/config.yml`"
+    );
+    expect(arena).not.toContain("from the current harness's pstack model sheet");
+    expect(arena).not.toContain(
+      "Otherwise default to `claude:claude-fable-5@max`"
+    );
+  });
+
+  it("defaults to omp's writer lanes and review judge", () => {
+    expect(arena).toContain("`pstack-task` and `pstack-designer`");
+    expect(arena).toContain("`pstack-reviewer`");
+  });
+
+  it("dispatches native lanes as pstack role agents so sheet overrides apply", () => {
+    expect(arena).toContain(
+      "`task` dispatches of the `pstack-<omp-role>` agents"
+    );
+    expect(arena).toContain("a lane without a sheet row is unconfigured");
+  });
+
+  it("fails closed on an unconfigured sheet", () => {
+    expect(arena).toContain("unconfigured lanes");
+    expect(arena).toContain("setup-pstack");
+  });
+
+  it("keeps the external provider panel as an explicit opt-in", () => {
+    expect(arena).toContain("only when the operator asks for cross-provider signal");
+  });
+});
+
+describe("panel skills resolve from the omp lane sheet", () => {
+  const swarm = readFileSync(SWARM_PATH, "utf8");
+  const how = readFileSync(HOW_PATH, "utf8");
+  const interrogate = readFileSync(INTERROGATE_PATH, "utf8");
+  const architect = readFileSync(ARCHITECT_PATH, "utf8");
+  const LANE_SHEET =
+    "`pstack-*` lane rows under `task.agentModelOverrides` in `~/.omp/agent/config.yml`";
+
+  it("swarm picks its worker lane from the live sheet", () => {
+    expect(swarm).toContain(LANE_SHEET);
+    expect(swarm).toContain("Default `pstack-task`");
+    expect(swarm).not.toContain("from the current harness's pstack model sheet");
+    expect(swarm).not.toContain("Otherwise use `grok:grok-4.6@xhigh`");
+  });
+
+  it("how maps explorer, explainer, and critics onto read-only lanes", () => {
+    expect(how).toContain("`pstack-scout`");
+    expect(how).toContain("`pstack-reviewer`");
+    expect(how).toContain("`pstack-security-reviewer`");
+    expect(how).not.toContain("default `grok:grok-4.6@xhigh`");
+    expect(how).not.toContain("default `claude:claude-fable-5@max`");
+  });
+
+  it("interrogate panels the read-only lanes and drops the dead sheet row", () => {
+    expect(interrogate).toContain(LANE_SHEET);
+    expect(interrogate).toContain(
+      "`pstack-reviewer`, `pstack-security-reviewer`, and `pstack-librarian`"
+    );
+    expect(interrogate).toContain("| Reviewer A | `pstack-reviewer` |");
+    expect(interrogate).not.toContain("from the current harness's pstack model sheet");
+  });
+
+  it("architect defers runner resolution to arena", () => {
+    expect(architect).not.toContain("configured architect runners");
+    expect(architect).toContain("Arena resolves the runners from omp's lane sheet");
+  });
+
+  it("each panel skill fails closed on an unconfigured sheet", () => {
+    for (const text of [swarm, how, interrogate]) {
+      expect(text).toContain("unconfigured lanes");
+      expect(text).toContain("setup-pstack");
+    }
   });
 });
