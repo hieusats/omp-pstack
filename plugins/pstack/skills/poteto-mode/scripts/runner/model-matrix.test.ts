@@ -243,6 +243,9 @@ describe("model matrix", () => {
       }
     }
     expect(expected.size).toBe(OMP_ROLE_LANES.length);
+    if (sharedBody === null) throw new Error("no lane body read");
+    expect(sharedBody).toContain("hard boundary");
+    expect(sharedBody).toContain("`hub` process starts");
     const shipped = readdirSync(AGENTS_DIR)
       .filter((name) => name.startsWith("pstack-") && name.endsWith(".md"))
       .sort();
