@@ -50,7 +50,7 @@ setup="$repo/plugins/pstack/skills/setup-pstack/SKILL.md"
 dispatch="$repo/plugins/pstack/skills/poteto-mode/references/provider-dispatch.md"
 quad_of() { { grep -oE '(claude|codex|grok):[a-z0-9.-]+@(low|medium|high|xhigh|max)' || true; } | tr '\n' ' ' | sed 's/ $//'; }
 canon_quad="$(awk '
-  $0 == "## Model matrix" { in_matrix = 1; next }
+  $0 == "## Provider panel" { in_matrix = 1; next }
   in_matrix && /^## / { exit }
   in_matrix && /^\|/ {
     line = $0

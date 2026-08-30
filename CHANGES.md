@@ -1,6 +1,10 @@
 # CHANGES — applied substitutions
 
-This record covers the whole port history. It began as Cursor → Claude Code substitutions, added a Codex build, then a 1.3.0 omp target, and from 2.0.0 omp is the only target. Sections below their release describe the tree as it was at that release; the 2.1.2 section describes the current tree.
+This record covers the whole port history. It began as Cursor → Claude Code substitutions, added a Codex build, then a 1.3.0 omp target, and from 2.0.0 omp is the only target. Sections below their release describe the tree as it was at that release; the 2.1.3 section describes the current tree.
+
+## 2.1.3 anchors lane-selector legality to the omp registry
+
+Tracking issue [#10](https://github.com/hieusats/omp-pstack/issues/10). `provider-dispatch.md` stops presenting the four-family table as the legality domain of a lane selector. The section is now `## Provider panel`, the table is the first-run default group plus the external CLI lanes, and a native lane selector is legal when `omp models` lists its provider and model, with the registry's listed thinking levels as its selectable efforts. The parent route table generalizes from provider prefixes (`claude:*`, `codex:*`, `grok:*`) to lane type, because an omp registry can serve any provider natively. `setup-pstack` gains the matching registry-native path: a loaded row outside the panel is legal when `omp models` lists it, and on an install whose registry serves none of the panel families the skill runs a registry-native first run, one selector per uncovered lane, instead of dead-ending on four failed frontier probes. The effort universe, the fail-closed stance on selectors listed by neither the panel nor the registry, the external `pstack-runner` lanes, and the no-fallback rules are unchanged. `model-matrix.test.ts` pins the new contract red-first and `skill-collision-repro.sh` keeps reading the unchanged quad from the renamed section. The bump refreshes installed catalogs.
 
 ## 2.1.2 closes the five recorded findings from the 2026-08-30 sessions
 

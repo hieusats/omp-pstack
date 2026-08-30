@@ -135,7 +135,7 @@ This repository also keeps:
 
 ## Staying close to Lauren's pstack
 
-omp-pstack 2.1.2 tracks pstack 0.14.5 at Cursor commit [`6fecddba65801f9b9c08b8b328d998ee5b09d290`](https://github.com/cursor/plugins/commit/6fecddba65801f9b9c08b8b328d998ee5b09d290).
+omp-pstack 2.1.3 tracks pstack 0.14.5 at Cursor commit [`6fecddba65801f9b9c08b8b328d998ee5b09d290`](https://github.com/cursor/plugins/commit/6fecddba65801f9b9c08b8b328d998ee5b09d290).
 
 The two projects have separate version numbers. The pstack version identifies Lauren's upstream content. The omp-pstack version identifies the omp package built from it.
 

@@ -104,9 +104,9 @@ function asEffort(value: string): Effort {
 
 function parseModelMatrix(markdown: string): MatrixRow[] {
   const lines = markdown.split(/\r?\n/);
-  const start = lines.findIndex((line) => line.trim() === "## Model matrix");
+  const start = lines.findIndex((line) => line.trim() === "## Provider panel");
   if (start < 0) {
-    throw new Error("missing ## Model matrix");
+    throw new Error("missing ## Provider panel");
   }
   let end = lines.length;
   for (let i = start + 1; i < lines.length; i++) {
@@ -121,7 +121,7 @@ function parseModelMatrix(markdown: string): MatrixRow[] {
     .filter((line) => line.startsWith("|"));
   if (table.length !== 6) {
     throw new Error(
-      `model matrix must be header, separator, and 4 data rows, got ${table.length}`
+      `provider panel must be header, separator, and 4 data rows, got ${table.length}`
     );
   }
   const header = splitRow(table[0]);
@@ -195,7 +195,7 @@ function firstRunSheet(setup: string): string {
   return match[1];
 }
 
-describe("model matrix", () => {
+describe("provider panel", () => {
   const rows = parseModelMatrix(readFileSync(DISPATCH_PATH, "utf8"));
   const setup = readFileSync(SETUP_PATH, "utf8");
   const quad = defaultDescriptors(rows);
@@ -300,7 +300,7 @@ describe("model matrix", () => {
     expect(setup).toContain("An effort-only rerun cannot change a role's family.");
   });
 
-  it("binds native dispatch to the matrix mapping", () => {
+  it("binds native dispatch to the panel mapping", () => {
     const dispatch = readFileSync(DISPATCH_PATH, "utf8");
     const nativeStart = dispatch.indexOf("## Native lanes");
     const externalStart = dispatch.indexOf("## External lanes");
@@ -309,5 +309,27 @@ describe("model matrix", () => {
     const nativeLanes = dispatch.slice(nativeStart, externalStart);
     expect(nativeLanes).toContain("`pstack-<omp-role>`");
     expect(nativeLanes).toContain("task.agentModelOverrides");
+  });
+
+  it("anchors selector legality to the omp registry, not the panel", () => {
+    const dispatch = readFileSync(DISPATCH_PATH, "utf8");
+    expect(dispatch).toContain("## Provider panel");
+    expect(dispatch).not.toContain("## Model matrix");
+    expect(dispatch).toContain(
+      "The panel is the first-run default group, not the legality domain of a lane selector."
+    );
+    expect(dispatch).toContain(
+      "A native lane selector is legal when `omp models` lists its provider and model"
+    );
+    expect(dispatch).toContain(
+      "| omp | native `task` lane | external runner |"
+    );
+    expect(setup).toContain("registry-native");
+    expect(setup).toContain(
+      "When the registry serves none of the panel families"
+    );
+    expect(setup).toContain(
+      "`omp models` must list it, and its effort must be one of the thinking levels the registry lists for that model"
+    );
   });
 });
