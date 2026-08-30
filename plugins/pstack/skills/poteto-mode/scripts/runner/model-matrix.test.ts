@@ -18,11 +18,23 @@ const MATRIX_HEADER = [
   "Model",
   "Default effort",
   "Selectable efforts",
-  "Agent stem",
 ] as const;
 
 const FAMILY_ORDER = ["fable", "sol", "grok", "opus"] as const;
 const PROVIDERS = ["claude", "codex", "grok"] as const;
+const OMP_ROLE_LANES = [
+  { role: "scout", model: '"@smol"', tools: "read, grep, glob" },
+  {
+    role: "designer",
+    model: '"@designer"',
+    tools: "read, grep, glob, edit, write, browser",
+  },
+  { role: "reviewer", model: '"@slow"', tools: "read, grep, glob, bash, lsp" },
+  { role: "security-reviewer", model: null, tools: "read, grep, glob" },
+  { role: "librarian", model: '"@smol"', tools: "read, grep, glob, web_search" },
+  { role: "task", model: '"@task"', tools: null },
+  { role: "sonic", model: '"@smol"', tools: "read, grep, glob, edit, write" },
+] as const;
 const DESCRIPTOR_RE =
   /(claude|codex|grok):[a-z0-9.-]+@(low|medium|high|xhigh|max)/g;
 const PANEL_ROLES = [
@@ -66,7 +78,6 @@ interface MatrixRow {
   model: string;
   defaultEffort: Effort;
   selectableEfforts: Effort[];
-  claudeNativeAgentStem: string | null;
 }
 
 function splitRow(line: string): string[] {
@@ -125,26 +136,12 @@ function parseModelMatrix(markdown: string): MatrixRow[] {
     if (cells.length !== MATRIX_HEADER.length) {
       throw new Error(`matrix row has ${cells.length} cells: ${line}`);
     }
-    const [
-      family,
-      upstreamChoice,
-      provider,
-      model,
-      defaultEffortRaw,
-      selectableRaw,
-      stemRaw,
-    ] = cells;
+    const [family, upstreamChoice, provider, model, defaultEffortRaw, selectableRaw] =
+      cells;
     if (!(PROVIDERS as readonly string[]).includes(provider)) {
       throw new Error(`invalid provider: ${provider}`);
     }
     const selectableEfforts = selectableRaw.split(/\s+/).map(asEffort);
-    const claudeNativeAgentStem = stemRaw === "-" ? null : stemRaw;
-    if (claudeNativeAgentStem !== null && !/^[a-z0-9-]+$/.test(claudeNativeAgentStem)) {
-      throw new Error(`invalid Claude-native agent stem: ${stemRaw}`);
-    }
-    if ((provider === "claude") !== (claudeNativeAgentStem !== null)) {
-      throw new Error(`${family} stem must be present iff provider is claude`);
-    }
     const defaultEffort = asEffort(defaultEffortRaw);
     if (!selectableEfforts.includes(defaultEffort)) {
       throw new Error(`${family} default effort is not selectable`);
@@ -156,7 +153,6 @@ function parseModelMatrix(markdown: string): MatrixRow[] {
       model,
       defaultEffort,
       selectableEfforts,
-      claudeNativeAgentStem,
     };
   });
 }
@@ -225,44 +221,29 @@ describe("model matrix", () => {
     ]);
   });
 
-  it("ships exactly the declared Claude-native frontier agents", () => {
+  it("ships exactly one native lane per omp bundled role", () => {
     const expected = new Set<string>();
-    const familyBodies = new Map<string, string>();
-    for (const row of rows) {
-      const stem = row.claudeNativeAgentStem;
-      if (stem === null) {
-        continue;
-      }
-      for (const effort of row.selectableEfforts) {
-        const name = `pstack-${stem}-${effort}`;
-        expected.add(`${name}.md`);
-        const text = readFileSync(join(AGENTS_DIR, `${name}.md`), "utf8");
-        const { fields, body } = parseFrontmatter(text);
-        expect(fields).toEqual({
-          name,
-          description: `Native Claude lane for pstack roles configured as ${row.provider}:${row.model}@${effort}.`,
-          model: row.model,
-          effort,
-          background: "true",
-          disallowedTools: "Agent, Task",
-        });
-        const prior = familyBodies.get(stem);
-        if (prior === undefined) {
-          familyBodies.set(stem, body);
-        } else {
-          expect(body).toBe(prior);
-        }
+    let sharedBody: string | null = null;
+    for (const lane of OMP_ROLE_LANES) {
+      const name = `pstack-${lane.role}`;
+      expected.add(`${name}.md`);
+      const text = readFileSync(join(AGENTS_DIR, `${name}.md`), "utf8");
+      const { fields, body } = parseFrontmatter(text);
+      expect(fields, name).toEqual({
+        name,
+        description: `Native pstack lane wrapping omp's ${lane.role} agent for pstack dispatch.`,
+        ...(lane.model === null ? {} : { model: lane.model }),
+        ...(lane.tools === null ? {} : { tools: lane.tools }),
+        background: "true",
+        disallowedTools: "Agent, Task",
+      });
+      if (sharedBody === null) {
+        sharedBody = body;
+      } else {
+        expect(body, name).toBe(sharedBody);
       }
     }
-    const declaredCount = rows.reduce(
-      (count, row) =>
-        count +
-        (row.claudeNativeAgentStem === null
-          ? 0
-          : row.selectableEfforts.length),
-      0
-    );
-    expect(expected.size).toBe(declaredCount);
+    expect(expected.size).toBe(OMP_ROLE_LANES.length);
     const shipped = readdirSync(AGENTS_DIR)
       .filter((name) => name.startsWith("pstack-") && name.endsWith(".md"))
       .sort();
@@ -324,7 +305,7 @@ describe("model matrix", () => {
     expect(nativeStart).toBeGreaterThan(-1);
     expect(externalStart).toBeGreaterThan(nativeStart);
     const nativeLanes = dispatch.slice(nativeStart, externalStart);
-    expect(nativeLanes).toContain("`pstack-<stem>-<effort>`");
+    expect(nativeLanes).toContain("`pstack-<omp-role>`");
     expect(nativeLanes).toContain("task.agentModelOverrides");
   });
 });
