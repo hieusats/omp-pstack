@@ -7,29 +7,67 @@ const plugin = join(repo, "plugins", "pstack");
 
 const read = (rel: string) => readFileSync(join(repo, rel), "utf8");
 
-describe("omp-preferred catalog", () => {
-  it("ships .omp-plugin/marketplace.json byte-identical to the Claude catalog", () => {
-    expect(read(".omp-plugin/marketplace.json")).toBe(
-      read(".claude-plugin/marketplace.json"),
-    );
+const HARNESS_SURFACES = [
+  ".claude-plugin",
+  ".agents",
+  "plugins/pstack/.claude-plugin",
+  "plugins/pstack/.codex-plugin",
+  "plugins/pstack/hooks",
+];
+
+const BANNED_MARKERS = [
+  "Claude Code",
+  "CLAUDE.md",
+  "AskUserQuestion",
+  "TodoWrite",
+  ".claude-plugin",
+  ".codex-plugin",
+  ".agents/plugins",
+  "hooks.json",
+  "codex-tools.md",
+  "spawn_agent",
+  "update_plan",
+  "subagent_type",
+];
+
+describe("omp-only distribution", () => {
+  it("carries no Claude Code or Codex harness surface", () => {
+    for (const rel of HARNESS_SURFACES) {
+      expect(existsSync(join(repo, rel)), rel).toBe(false);
+    }
   });
 
-  it("keeps every manifest and UPSTREAM.md on one version", () => {
-    const ompCatalog = JSON.parse(read(".omp-plugin/marketplace.json"));
-    const claudeCatalog = JSON.parse(read(".claude-plugin/marketplace.json"));
-    const claudePlugin = JSON.parse(
-      read("plugins/pstack/.claude-plugin/plugin.json"),
-    );
-    const codexPlugin = JSON.parse(
-      read("plugins/pstack/.codex-plugin/plugin.json"),
-    );
+  it("ships the plugin manifest at omp's preferred path", () => {
+    expect(existsSync(join(plugin, ".omp-plugin", "plugin.json"))).toBe(true);
+  });
+
+  it("keeps the catalog, plugin manifest, and UPSTREAM.md on one version", () => {
+    const catalog = JSON.parse(read(".omp-plugin/marketplace.json"));
+    const manifest = JSON.parse(read("plugins/pstack/.omp-plugin/plugin.json"));
     const upstream = read("UPSTREAM.md").match(
-      /\| open-pstack version \| `([^`]+)` \|/,
+      /\| omp-pstack version \| `([^`]+)` \|/,
     )?.[1];
-    expect(ompCatalog.plugins[0].version).toBe(claudeCatalog.plugins[0].version);
-    expect(claudeCatalog.plugins[0].version).toBe(claudePlugin.version);
-    expect(claudePlugin.version).toBe(codexPlugin.version);
-    expect(claudePlugin.version).toBe(upstream);
+    expect(catalog.plugins[0].version).toBe(manifest.version);
+    expect(manifest.version).toBe(upstream);
+  });
+
+  it("keeps harness names out of the skill tree", () => {
+    const offenders: string[] = [];
+    const walk = (dir: string) => {
+      for (const entry of readdirSync(dir, { withFileTypes: true })) {
+        const path = join(dir, entry.name);
+        if (entry.isDirectory()) walk(path);
+        else if (entry.name.endsWith(".md")) {
+          const text = readFileSync(path, "utf8");
+          for (const marker of BANNED_MARKERS) {
+            if (text.includes(marker)) offenders.push(`${path}: ${marker}`);
+          }
+          if (/\bCodex\b/.test(text)) offenders.push(`${path}: Codex`);
+        }
+      }
+    };
+    walk(join(plugin, "skills"));
+    expect(offenders).toEqual([]);
   });
 });
 
@@ -43,28 +81,15 @@ describe("omp session mandate rule", () => {
     expect(frontmatter).toContain("alwaysApply: true");
   });
 
-  it("keeps the routing the Claude hook mandate carries, omp-flat", () => {
+  it("carries the poteto-mode routing omp-flat", () => {
     const rule = readFileSync(rulePath, "utf8");
-    const hook = readFileSync(
-      join(plugin, "hooks", "session-start-context.md"),
-      "utf8",
-    );
     expect(rule).toContain("<EXTREMELY_IMPORTANT>");
     expect(rule).toContain("skill://poteto-mode");
-    for (const marker of [
-      "non-trivial engineering task",
-      "ignore this block",
-      "take precedence over this mandate",
-    ]) {
-      expect(rule, "rule").toContain(marker);
-      expect(hook, "hook must stay in sync with the rule").toContain(marker);
-    }
     for (const skill of ["tdd", "architect", "how", "why", "arena", "interrogate"]) {
-      expect(rule, "rule").toContain(`\`${skill}\``);
-      expect(hook, "hook must stay in sync with the rule").toContain(
-        `\`pstack:${skill}\``,
-      );
+      expect(rule).toContain(`\`${skill}\``);
     }
+    expect(rule).toContain("ignore this block");
+    expect(rule).toContain("take precedence over this mandate");
     expect(rule).not.toContain("pstack:");
   });
 

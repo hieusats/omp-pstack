@@ -1,6 +1,6 @@
 # Upstream synchronization
 
-open-pstack tracks [Cursor's pstack](https://github.com/cursor/plugins/tree/main/pstack) while adapting Cursor-specific primitives for Claude Code and Codex. The omp-pstack fork adds Oh My Pi (omp) as a third harness on the same sync point; its adaptations are recorded in `CHANGES.md` and confined to the existing mapping boundaries.
+omp-pstack tracks [Cursor's pstack](https://github.com/cursor/plugins/tree/main/pstack) and distributes it for omp only. Claude Code and Codex targets were removed in 2.0.0. Adaptations are recorded in `CHANGES.md` and live at the existing mapping boundaries.
 
 ## Current sync point
 
@@ -10,9 +10,9 @@ open-pstack tracks [Cursor's pstack](https://github.com/cursor/plugins/tree/main
 | Path | `pstack/` |
 | Commit | `6fecddba65801f9b9c08b8b328d998ee5b09d290` |
 | Upstream version | `0.14.5` |
-| open-pstack version | `1.3.0` |
+| omp-pstack version | `2.0.0` |
 
-The table above is the current Cursor sync point. Open Pstack 1.3.0 records this 0.14.5 sync. The only content change upstream is the `make-bot-ui` skill, which is built on Cursor product primitives with no Claude Code, Codex, or omp equivalent (the `update_state` routine tool, the Routines panel, `api2.cursor.sh` webhooks, `SendToUser` secret-request cards), so it is deliberately not ported; see `CHANGES.md`. `README-UPSTREAM.md` preserves its pstack README verbatim. `CHANGES.md` and `NOTICE.md` describe the adaptations and provenance.
+The table above is the current Cursor sync point. omp-pstack 2.0.0 records this 0.14.5 sync. The only content change upstream is the `make-bot-ui` skill, which is built on Cursor product primitives with no omp equivalent (the `update_state` routine tool, the Routines panel, `api2.cursor.sh` webhooks, `SendToUser` secret-request cards), so it is deliberately not ported; see `CHANGES.md`. `README-UPSTREAM.md` preserves its pstack README verbatim. `CHANGES.md` and `NOTICE.md` describe the adaptations and provenance.
 
 ## Check for changes
 
@@ -34,11 +34,11 @@ No output means the tracked pstack tree has not changed. This comparison does no
 
 ## Incorporate a change
 
-1. Create or update a GitHub issue in `ericlitman/open-pstack` and branch from current `main`.
-2. Read each upstream pstack commit in order. Bring over its intent and content, then apply only the Claude Code and Codex substitutions documented in `CHANGES.md`.
-3. Keep one shared `plugins/pstack/skills/` tree. Put harness translation in the existing `codex-tools.md` and provider routing in `provider-dispatch.md`; do not fork a skill per harness. This holds for the omp additions: omp tool mapping lives in `codex-tools.md`, omp routes in `provider-dispatch.md` and `setup-pstack`, and because omp does not execute Claude Code `hooks.json`, the omp startup mandate ships as the always-apply rule `plugins/pstack/rules/pstack-session-mandate.md`, documented in `docs/omp.md`.
+1. Create or update a GitHub issue in the distribution repository and branch from current `main`.
+2. Read each upstream pstack commit in order. Bring over its intent and content, then apply the omp substitutions documented in `CHANGES.md` (Cursor primitives become omp tools and skills; harness names do not return).
+3. Keep one `plugins/pstack/skills/` tree written omp-first. Provider routing lives in `provider-dispatch.md` and `setup-pstack`. The startup mandate ships as the always-apply rule `plugins/pstack/rules/pstack-session-mandate.md`, documented in `docs/omp.md`.
 4. Update the commit and version in this file, the affected provenance rows in `NOTICE.md`, and `README-UPSTREAM.md` when upstream changes it.
-5. Run CI-equivalent checks locally, then run the installed Claude Code and Codex behavioral lanes required by the changed surface. Unit tests alone are not a release gate.
-6. Merge the reviewed PR before tagging the next open-pstack release.
+5. Run CI-equivalent checks locally, then live-test the installed plugin from a real omp session on the changed surface. Unit tests alone are not a release gate.
+6. Merge the reviewed PR before tagging the next release.
 
-Cursor's version and open-pstack's version are independent. Cursor's version identifies the imported content; open-pstack's version identifies the cross-harness distribution.
+Cursor's version and omp-pstack's version are independent. Cursor's version identifies the imported content; omp-pstack's version identifies the omp distribution.

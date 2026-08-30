@@ -1,8 +1,8 @@
 {
   "name": "pstack",
   "displayName": "pstack",
-  "version": "1.3.0",
-  "description": "if you want to go fast, go deep first. pstack helps you write less, but higher quality code. rigorous agent workflows you can parallelize with confidence. Ported from cursor/plugins/pstack for Claude Code and Codex.",
+  "version": "2.0.0",
+  "description": "if you want to go fast, go deep first. pstack helps you write less, but higher quality code. rigorous agent workflows you can parallelize with confidence. omp-only distribution tracking Cursor's upstream pstack.",
   "author": {
     "name": "Lauren Tan"
   },

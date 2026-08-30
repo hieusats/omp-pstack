@@ -1,6 +1,6 @@
 # omp (Oh My Pi)
 
-omp-pstack targets omp alongside Claude Code and Codex. omp reads this repository's `.omp-plugin/marketplace.json` catalog (its preferred path, byte-identical to the `.claude-plugin/marketplace.json` copy Claude Code reads) and discovers skills, commands, tools, MCP servers, and the `agents/` directory from the installed plugin tree.
+omp-pstack is the omp distribution of pstack; omp is its only target. omp reads this repository's `.omp-plugin/marketplace.json` catalog and discovers skills, commands, tools, MCP servers, and the `agents/` directory from the installed plugin tree.
 
 ## Install
 
@@ -13,7 +13,7 @@ Skills appear under flat names — `/skill:architect`, `/skill:poteto-mode`, `sk
 
 ## Startup mandate
 
-omp does not execute Claude Code `hooks.json`, so the SessionStart hook Claude Code uses stays silent on omp. The plugin instead ships the mandate as an omp-native always-apply rule at `plugins/pstack/rules/pstack-session-mandate.md`. omp's plugin rule discovery loads it from the installed plugin and injects its full content into every session's system prompt automatically; no manual setup step exists. The rule mirrors `plugins/pstack/hooks/session-start-context.md` with omp's flat skill names, stays addressable as `rule://pstack-session-mandate`, and like the hook version defers to direct user instructions and lets dispatched subagents ignore it.
+omp does not execute Claude-style `hooks.json`, so there is no hook to carry the mandate. The plugin instead ships the mandate as an omp-native always-apply rule at `plugins/pstack/rules/pstack-session-mandate.md`. omp's plugin rule discovery loads it from the installed plugin and injects its full content into every session's system prompt automatically; no manual setup step exists. The rule stays addressable as `rule://pstack-session-mandate`, defers to direct user instructions, and lets dispatched subagents ignore it.
 
 To opt out, delete the `rules/` directory from the installed copy under `~/.omp/plugins/cache/plugins/omp-pstack___pstack_*_<version>/`; a plugin update restores it.
 
