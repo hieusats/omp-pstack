@@ -1,0 +1,9 @@
+{
+  "name": "pstack",
+  "private": true,
+  "omp": {
+    "extensions": [
+      "./extension/index.js"
+    ]
+  }
+}
