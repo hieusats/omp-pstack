@@ -8,14 +8,14 @@ pstack model choices are provider-qualified descriptors:
 
 ## Model matrix
 
-| Family | Upstream pstack choice | Provider | Model | Default effort | Selectable efforts | Agent stem |
-|---|---|---|---|---|---|---|
-| fable | claude-fable-5-thinking-max | claude | claude-fable-5 | max | low medium high xhigh max | fable |
-| sol | gpt-5.6-sol-max | codex | gpt-5.6-sol | max | low medium high xhigh max | - |
-| grok | grok-4.6-fast-xhigh | grok | grok-4.6 | xhigh | low medium high xhigh max | - |
-| opus | claude-opus-5-thinking-xhigh | claude | claude-opus-5 | xhigh | low medium high xhigh max | opus |
+| Family | Upstream pstack choice | Provider | Model | Default effort | Selectable efforts |
+|---|---|---|---|---|---|
+| fable | claude-fable-5-thinking-max | claude | claude-fable-5 | max | low medium high xhigh max |
+| sol | gpt-5.6-sol-max | codex | gpt-5.6-sol | max | low medium high xhigh max |
+| grok | grok-4.6-fast-xhigh | grok | grok-4.6 | xhigh | low medium high xhigh max |
+| opus | claude-opus-5-thinking-xhigh | claude | claude-opus-5 | xhigh | low medium high xhigh max |
 
-The allowed effort universe is exactly `low`, `medium`, `high`, `xhigh`, `max`. First-run requested efforts are the Default effort cell of each row. An agent stem of `-` means the family has no shipped lane agent. Otherwise the shipped agent name is `pstack-<stem>-<effort>`.
+The allowed effort universe is exactly `low`, `medium`, `high`, `xhigh`, `max`. First-run requested efforts are the Default effort cell of each row. Native lane agents are keyed by omp's bundled roles, not by model family; the shipped lane name is `pstack-<omp-role>`.
 
 `fast` is part of Cursor's Grok selector, not a Grok Build CLI model or effort flag. The portable Grok route pins the current CLI model `grok-4.6`. The first-run Grok effort is `xhigh`.
 
@@ -31,7 +31,7 @@ omp is the only parent in this distribution. It resolves the route once. A child
 
 ## Native lanes
 
-Native dispatch avoids a second CLI startup and its base context. Dispatch `pstack-<stem>-<effort>` as native `task` agents, the shipped definitions discovered from the plugin's `agents/` directory. Model and effort resolution comes from `task.agentModelOverrides` in `~/.omp/agent/config.yml`, written by `setup-pstack`. omp silently runs a lane on the parent model when its mapping is missing, so treat an unmapped lane as unconfigured, never as `inherit-parent`. Fan out with one multi-item `task` dispatch; results arrive as background job results and are drained after fan-out.
+Native dispatch avoids a second CLI startup and its base context. Dispatch `pstack-<omp-role>` as native `task` agents, the shipped definitions discovered from the plugin's `agents/` directory. Model and effort resolution comes from `task.agentModelOverrides` in `~/.omp/agent/config.yml`, written by `setup-pstack`; a lane without a sheet row falls back to its omp role alias, so treat an unmapped lane as unconfigured, never as `inherit-parent`. Fan out with one multi-item `task` dispatch; results arrive as background job results and are drained after fan-out.
 
 Do not send a descriptor that a native lane serves to the external runner. The native route is cheaper and already available.
 

@@ -47,7 +47,7 @@ Files authored for this port (not derived from upstream):
 - `plugins/pstack/skills/poteto-mode/scripts/runner/` (the external-lane launcher and its tests)
 - `plugins/pstack/skills/poteto-mode/scripts/check-playbooks.test.ts`
 - `plugins/pstack/skills/babysit/SKILL.md` (independently authored; workflow informed by Cursor's public `/babysit` behavior)
-- `plugins/pstack/agents/pstack-fable-*.md` and `plugins/pstack/agents/pstack-opus-*.md` (frontier lanes at each selectable effort)
+- `plugins/pstack/agents/pstack-*.md` (native lanes wrapping omp's bundled agent roles)
 - `NOTICE.md` (this file)
 - `README.md`
 - `CHANGES.md`

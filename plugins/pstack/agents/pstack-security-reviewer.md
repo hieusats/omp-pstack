@@ -1,12 +1,9 @@
 ---
-name: pstack-fable-low
-description: Native Claude lane for pstack roles configured as claude:claude-fable-5@low.
-model: claude-fable-5
-effort: low
-background: true
-disallowedTools: Agent, Task
+name: pstack-security-reviewer
+description: Native pstack lane wrapping omp's security-reviewer agent for pstack dispatch.
+tools: read, grep, glob
 ---
 
-# pstack Fable lane
+# pstack role lane
 
 Execute only the task and path scope the parent assigns. Read the grounding artifacts by path. Do not choose another model, spawn another agent, or start a pstack workflow. If the assignment is read-only, do not modify files. Return the requested artifact or verdict plus a concise rationale.

@@ -44,9 +44,9 @@ The `skills/` tree is the only workflow source; no `commands/` layer ships. Skil
 
 - **Skill invocation.** omp loads `SKILL.md` natively. Invoke a skill with `/skill:<name>`, by asking for it by name, or by reading `skill://<name>`.
 - **Subagents.** The `task` tool with a named `agent` dispatches the shipped agents. Parallel fan-out is one multi-item `tasks[]` dispatch. If a native lane is unmapped in `task.agentModelOverrides`, record that lane as unconfigured; external lanes still run, and no provider is silently substituted. For an ad-hoc subagent in poteto style, dispatch `poteto-agent` or a `task` worker told to read `poteto-mode` first.
-- **Models.** `setup-pstack` asks one requested effort per frontier family (`low`, `medium`, `high`, `xhigh`, `max`) and writes the ten `pstack-*` rows under `task.agentModelOverrides` in `~/.omp/agent/config.yml`. The first-run panel is Fable 5 max, GPT-5.6 Sol max, Grok 4.6 xhigh, and Opus 5 xhigh. Lane agents mapped to selectors run as native omp task agents; the codex and Grok families run through the deterministic external runner. Children never detect the parent or reroute themselves.
+- **Models.** `setup-pstack` asks one requested effort per frontier family (`low`, `medium`, `high`, `xhigh`, `max`) and writes the seven `pstack-*` lane rows under `task.agentModelOverrides` in `~/.omp/agent/config.yml`. The first-run panel is Fable 5 max, GPT-5.6 Sol max, Grok 4.6 xhigh, and Opus 5 xhigh. Lane agents mapped to selectors run as native omp task agents; the codex and Grok families run through the deterministic external runner. Children never detect the parent or reroute themselves.
 
-Verified in fresh installed omp sessions at 2.0.0: the user-facing skills are discovered under flat names, the twelve agents are native task agents, the mandate rule is injected without any manual step, and `skill://setup-pstack` serves the omp-only flow. External lanes follow the runner contract with receipts; on hosts where an external CLI is unauthenticated, the lane is a recorded dropout, never a silent substitution.
+Verified in fresh installed omp sessions at 2.1.0: the user-facing skills are discovered under flat names, the nine agents are native task agents, the mandate rule is injected without any manual step, and `skill://setup-pstack` serves the omp-only flow. External lanes follow the runner contract with receipts; on hosts where an external CLI is unauthenticated, the lane is a recorded dropout, never a silent substitution.
 
 ## Dependencies
 
@@ -107,7 +107,7 @@ The table uses the short names. Invoke each as `/skill:<name>` (for example `/sk
 
 `comment-sicko` is the read-only comment reviewer the `no-comments` skill dispatches. Upstream names it `Comment Sicko`; the port renames it to `comment-sicko` so the name works as an omp agent. Invoke it through `no-comments`, not directly.
 
-Fable and Opus each ship at `low`, `medium`, `high`, `xhigh`, and `max`. Names are `pstack-<stem>-<effort>`. Each file names its lane; on omp the model and effort resolve through `task.agentModelOverrides`, and the lanes deny nested task dispatch. pstack dispatches them from provider-qualified descriptors; they are not user-facing workflows.
+The native lanes are keyed by omp's bundled roles: `pstack-scout`, `pstack-designer`, `pstack-reviewer`, `pstack-security-reviewer`, `pstack-librarian`, `pstack-task`, and `pstack-sonic`. Each lane's frontmatter carries the wrapped role's omp role alias and tool surface; on omp the model and effort resolve through `task.agentModelOverrides`, and the lanes deny nested task dispatch, with `pstack-task` pinning `spawns: []` because it inherits the session tool surface. pstack dispatches them from provider-qualified descriptors; they are not user-facing workflows. One sharp edge: omp adds the `hub` and `yield` tools beyond a lane's `tools` allowlist, so a read-only lane is tool-enforced against `write`, `edit`, and `bash`, but `hub` process starts remain reachable and rest on lane discipline under a hostile assignment.
 
 ## Differences from upstream
 
