@@ -1,6 +1,10 @@
 # CHANGES — applied substitutions
 
-This record covers the whole port history. It began as Cursor → Claude Code substitutions, added a Codex build, then a 1.3.0 omp target, and from 2.0.0 omp is the only target. Sections below their release describe the tree as it was at that release; the 2.1.3 section describes the current tree.
+This record covers the whole port history. It began as Cursor → Claude Code substitutions, added a Codex build, then a 1.3.0 omp target, and from 2.0.0 omp is the only target. Sections below their release describe the tree as it was at that release; the 2.1.6 section describes the current tree.
+
+## 2.1.6 resolves arena's panel from the omp lane sheet
+
+Tracking issue [#17](https://github.com/hieusats/omp-pstack/issues/17). `arena` was still fanning out the first-run provider quad. Its Phase A and Phase C read `arena runners` and `arena cross-judge pool` rows "from the current harness's pstack model sheet when present", phrasing left over from the multi-harness era when `~/.claude/pstack-models.md` carried those rows. In omp the live sheet is `task.agentModelOverrides`, which holds exactly the seven `pstack-<omp-role>` lane keys, so the branch was structurally dead and every arena run silently dispatched the external claude, codex, and grok CLI lanes. Reproduced live: the sheet carries no `arena runners` row, `omp models` lists only zai so the quad has zero native routes, a grok-CLI quad leg returned an `unauthenticated` receipt (exit 77), and a native `pstack-task` dispatch returned its marker in 4.9s. Arena now picks its runners from the live lane sheet, defaulting to the writer lanes `pstack-task` and `pstack-designer`, dispatches native lanes as `task` runs of the `pstack-<omp-role>` agents so the sheet supplies each lane's model and effort, defaults the cross-judge to `pstack-reviewer`, keeps the frontier quad as an explicit cross-provider opt-in through the bundled runner, and fails closed to setup-pstack when the sheet has no lane rows. `runner/model-matrix.test.ts` pins the resolution red-first, and `README.md` plus `docs/reference.md` describe the new panel behavior.
 
 ## 2.1.3 anchors lane-selector legality to the omp registry
 

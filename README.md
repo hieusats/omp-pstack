@@ -114,7 +114,7 @@ Invoke a skill as `/skill:<name>` (for example `/skill:architect`) or ask for it
 
 ## Models and token use
 
-Some pstack workflows use one model. Skills such as `architect`, `arena`, and `interrogate` can run several models in parallel. Each model run uses the subscription and token allowance of its own command-line tool.
+Some pstack workflows use one model. Skills such as `architect`, `arena`, and `interrogate` can run several models in parallel. `arena` runs its candidates on the omp lane agents by default, so their runs use the omp subscription. An external provider-panel lane uses the subscription and token allowance of its own command-line tool.
 
 `setup-pstack` lets you choose the models, one requested effort per model family, and how many run in parallel. Lane agents mapped in `~/.omp/agent/config.yml` run as native omp task agents. Other models run through their own command-line tools. omp-pstack does not quietly replace a failed model with a weaker one.
 

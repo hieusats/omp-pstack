@@ -76,9 +76,10 @@ quad_bad=""
 # Anchor on the quad's last slug rather than a hard-coded one, so a model swap in
 # setup-pstack cannot leave this check hunting for a slug nobody ships any more.
 anchor="${canon_quad##* }"
-# arena, architect, and how each state the quad on one line; interrogate lists it
-# as one slug per row of its Reviewer A/B/C/D table (upstream #167).
-for name in arena architect how; do
+# architect and how each state the quad on one line; interrogate lists it
+# as one slug per row of its Reviewer A/B/C/D table (upstream #167). arena
+# resolves its panel from the omp lane sheet and names no quad descriptors.
+for name in architect how; do
   skill="$repo/plugins/pstack/skills/$name/SKILL.md"
   n="$(grep -Fc "$anchor" "$skill" || true)"
   if [ "$n" != "1" ]; then
@@ -100,7 +101,7 @@ if [ -n "$quad_bad" ]; then
   note "$quad_bad"
   fail=1
 else
-  note "ok: default model quad identical across provider dispatch + 4 panel skills + setup-pstack ($canon_quad)"
+  note "ok: default model quad identical across provider dispatch + 3 quad-stating panel skills + setup-pstack ($canon_quad)"
 fi
 
 plugin="$repo/plugins/pstack"
