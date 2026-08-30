@@ -47,7 +47,7 @@ The launcher lives at `skills/poteto-mode/scripts/runner/pstack-runner` under th
 
 ```text
 pstack-runner \
-  --parent <claude|codex> \
+  --parent <claude|codex|omp> \
   --provider <claude|codex|grok> \
   --model <real CLI model> \
   --effort <low|medium|high|xhigh|max> \
