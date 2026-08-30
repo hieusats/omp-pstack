@@ -107,7 +107,7 @@ The table uses the short names. Invoke each as `/skill:<name>` (for example `/sk
 
 `comment-sicko` is the read-only comment reviewer the `no-comments` skill dispatches. Upstream names it `Comment Sicko`; the port renames it to `comment-sicko` so the name works as an omp agent. Invoke it through `no-comments`, not directly.
 
-The native lanes are keyed by omp's bundled roles: `pstack-scout`, `pstack-designer`, `pstack-reviewer`, `pstack-security-reviewer`, `pstack-librarian`, `pstack-task`, and `pstack-sonic`. Each lane's frontmatter carries the wrapped role's omp role alias and tool surface; on omp the model and effort resolve through `task.agentModelOverrides`, and the lanes deny nested task dispatch. pstack dispatches them from provider-qualified descriptors; they are not user-facing workflows.
+The native lanes are keyed by omp's bundled roles: `pstack-scout`, `pstack-designer`, `pstack-reviewer`, `pstack-security-reviewer`, `pstack-librarian`, `pstack-task`, and `pstack-sonic`. Each lane's frontmatter carries the wrapped role's omp role alias and tool surface; on omp the model and effort resolve through `task.agentModelOverrides`, and the lanes deny nested task dispatch, with `pstack-task` pinning `spawns: []` because it inherits the session tool surface. pstack dispatches them from provider-qualified descriptors; they are not user-facing workflows. One sharp edge: omp adds the `hub` and `yield` tools beyond a lane's `tools` allowlist, so a read-only lane is tool-enforced against `write`, `edit`, and `bash`, but `hub` process starts remain reachable and rest on lane discipline under a hostile assignment.
 
 ## Differences from upstream
 

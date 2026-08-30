@@ -2,8 +2,7 @@
 name: pstack-task
 description: Native pstack lane wrapping omp's task agent for pstack dispatch.
 model: "@task"
-background: true
-disallowedTools: Agent, Task
+spawns: []
 ---
 
 # pstack role lane

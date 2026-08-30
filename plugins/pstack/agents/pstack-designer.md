@@ -3,8 +3,6 @@ name: pstack-designer
 description: Native pstack lane wrapping omp's designer agent for pstack dispatch.
 model: "@designer"
 tools: read, grep, glob, edit, write, browser
-background: true
-disallowedTools: Agent, Task
 ---
 
 # pstack role lane
