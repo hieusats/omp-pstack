@@ -9,6 +9,7 @@ const DISPATCH_PATH = join(
   "skills/poteto-mode/references/provider-dispatch.md"
 );
 const SETUP_PATH = join(PLUGIN_ROOT, "skills/setup-pstack/SKILL.md");
+const ARENA_PATH = join(PLUGIN_ROOT, "skills/arena/SKILL.md");
 const AGENTS_DIR = join(PLUGIN_ROOT, "agents");
 
 const MATRIX_HEADER = [
@@ -331,5 +332,40 @@ describe("provider panel", () => {
     expect(setup).toContain(
       "`omp models` must list it, and its effort must be one of the thinking levels the registry lists for that model"
     );
+  });
+});
+
+describe("arena resolves its panel from the omp lane sheet", () => {
+  const arena = readFileSync(ARENA_PATH, "utf8");
+
+  it("picks runners from the live lane sheet, not a dead sheet row", () => {
+    expect(arena).toContain(
+      "`pstack-*` lane rows under `task.agentModelOverrides` in `~/.omp/agent/config.yml`"
+    );
+    expect(arena).not.toContain("from the current harness's pstack model sheet");
+    expect(arena).not.toContain(
+      "Otherwise default to `claude:claude-fable-5@max`"
+    );
+  });
+
+  it("defaults to omp's writer lanes and review judge", () => {
+    expect(arena).toContain("`pstack-task` and `pstack-designer`");
+    expect(arena).toContain("`pstack-reviewer`");
+  });
+
+  it("dispatches native lanes as pstack role agents so sheet overrides apply", () => {
+    expect(arena).toContain(
+      "`task` dispatches of the `pstack-<omp-role>` agents"
+    );
+    expect(arena).toContain("a lane without a sheet row is unconfigured");
+  });
+
+  it("fails closed on an unconfigured sheet", () => {
+    expect(arena).toContain("unconfigured lanes");
+    expect(arena).toContain("setup-pstack");
+  });
+
+  it("keeps the external provider panel as an explicit opt-in", () => {
+    expect(arena).toContain("only when the operator asks for cross-provider signal");
   });
 });
