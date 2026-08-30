@@ -40,4 +40,8 @@ describe("runner CLI parsing", () => {
       "greater than zero"
     );
   });
+
+  it("accepts an omp parent for external lanes", () => {
+    expect(parseArgs(argv(["--parent", "omp"]))?.parent).toBe("omp");
+  });
 });
