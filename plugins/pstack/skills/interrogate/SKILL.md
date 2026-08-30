@@ -9,7 +9,7 @@ Spawn one reviewer per configured model to adversarially review code changes. Ea
 
 The deliverable is a synthesized verdict. Do NOT auto-apply changes.
 
-**Dispatch contract.** Read [`provider-dispatch.md`](../poteto-mode/references/provider-dispatch.md) before launching reviewers. Configured entries are provider-qualified descriptors; the parent starts native and external read-only lanes directly.
+**Dispatch contract.** Read [`provider-dispatch.md`](../poteto-mode/references/provider-dispatch.md) before launching reviewers. Reviewers are omp lane agents; an external provider-panel value is an explicit opt-in, and the parent starts native and external read-only lanes directly.
 
 ## Step 1, Determine Scope
 
@@ -34,16 +34,15 @@ Write one clear paragraph. Reviewers challenge whether the work achieves the int
 
 ## Step 3, Spawn Reviewers
 
-Start all reviewers in one fan-out phase. Use `interrogate reviewers` from the current harness's pstack model sheet when present, one reviewer per entry, extending or shrinking the Reviewer A/B/C/D labels below to the configured entry count; otherwise use the table defaults. Native reviewers use the parent subagent primitive. External reviewers use the launcher directly and must return a complete, model-verified receipt.
+Start all reviewers in one fan-out phase. Pick the reviewer lanes from omp's live model sheet, the `pstack-*` lane rows under `task.agentModelOverrides` in `~/.omp/agent/config.yml`, one reviewer per lane and extending or shrinking the Reviewer A/B/C labels to the entry count. The default panel is `pstack-reviewer`, `pstack-security-reviewer`, and `pstack-librarian`. Native reviewers are background `task` dispatches of the `pstack-<omp-role>` agents, so the sheet supplies each lane's model and effort. External provider-panel reviewers are an explicit opt-in for cross-provider signal and use the launcher directly with a complete, model-verified receipt.
 
-| Subagent | Default model |
-|----------|---------------|
-| Reviewer A | `claude:claude-fable-5@max` |
-| Reviewer B | `codex:gpt-5.6-sol@max` |
-| Reviewer C | `grok:grok-4.6@xhigh` |
-| Reviewer D | `claude:claude-opus-5@xhigh` |
+| Subagent | Default lane |
+|----------|--------------|
+| Reviewer A | `pstack-reviewer` |
+| Reviewer B | `pstack-security-reviewer` |
+| Reviewer C | `pstack-librarian` |
 
-For each reviewer, route the configured descriptor with `read-only` access and a unique output/receipt path. If the descriptor is `inherit-parent` or `auto`, use the parent subagent primitive without a model override. If a provider, login, or model is unavailable, record a dropout and continue with the completed reviewers. Never pick the closest model or silently fall back; that destroys the meaning of cross-provider agreement.
+For each reviewer, dispatch the lane with `read-only` access and a unique output path. If a lane, provider, login, or model is unavailable, record a dropout and continue with the completed reviewers. Never pick the closest model or silently fall back; that destroys the meaning of cross-model agreement. Same-provider lanes reduce that signal, so say so in the synthesis. A sheet with no `pstack-*` rows is unconfigured lanes; point at setup-pstack.
 
 Read `references/reviewer-prompt.md` and fill in the template with:
 1. The stated intent

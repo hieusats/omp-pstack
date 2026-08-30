@@ -5,9 +5,9 @@ description: "Sketch types, signatures, and module structure before code, then s
 
 # Architect
 
-Design before implementing. Sketch types, function signatures, class shapes, and module boundaries with `not implemented` bodies and pseudocode. Synthesize across multiple model perspectives, then fill in code against the chosen sketch. If implementation proves the sketch wrong, throw it out and redesign.
+Design before implementing. Sketch types, function signatures, class shapes, and module boundaries with `not implemented` bodies and pseudocode. Synthesize across multiple independent candidates, then fill in code against the chosen sketch. If implementation proves the sketch wrong, throw it out and redesign.
 
-**Dispatch contract.** Architect's Arena uses the centralized provider routing in [`provider-dispatch.md`](../poteto-mode/references/provider-dispatch.md). Configured entries are descriptors, not native model slugs.
+**Dispatch contract.** Architect's Arena uses the centralized provider routing in [`provider-dispatch.md`](../poteto-mode/references/provider-dispatch.md); runners are omp lane agents, and an external provider-panel value is an explicit opt-in.
 
 ## Start
 
@@ -31,7 +31,7 @@ Skip Phase A only when the work is genuinely greenfield with no surrounding syst
 
 Run the **arena** skill with the design-sketch task and the Phase A grounding artifacts. Pass `references/runner-prompt.md` as each runner's prompt. Each candidate produces a design package shaped per `references/rationale-template.md`: the caller's usage written first, then the type sketch, function signatures, module map, and prose rationale derived from it.
 
-Use your configured architect runners (defaults `claude:claude-fable-5@max`, `codex:gpt-5.6-sol@max`, `grok:grok-4.6@xhigh`, `claude:claude-opus-5@xhigh`).
+Arena resolves the runners from omp's lane sheet itself; pass only the design-sketch task and the grounding artifacts, and let its Phase A pick the lanes.
 
 Design it twice. Require at least two structurally distinct candidates before synthesis, even when the first looks sufficient. This is the **exhaust-the-design-space** principle skill made concrete. Whole-shape alternatives, not point fixes inside one shape.
 

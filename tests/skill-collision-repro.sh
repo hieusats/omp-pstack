@@ -73,35 +73,19 @@ canon_quad="$(awk '
 ' "$dispatch")"
 quad_bad=""
 [ -n "$canon_quad" ] || quad_bad="could not read the canonical quad from $dispatch"$'\n'
-# Anchor on the quad's last slug rather than a hard-coded one, so a model swap in
-# setup-pstack cannot leave this check hunting for a slug nobody ships any more.
-anchor="${canon_quad##* }"
-# architect and how each state the quad on one line; interrogate lists it
-# as one slug per row of its Reviewer A/B/C/D table (upstream #167). arena
-# resolves its panel from the omp lane sheet and names no quad descriptors.
-for name in architect how; do
-  skill="$repo/plugins/pstack/skills/$name/SKILL.md"
-  n="$(grep -Fc "$anchor" "$skill" || true)"
-  if [ "$n" != "1" ]; then
-    quad_bad="$quad_bad$skill: expected exactly 1 default-quad line, found $n"$'\n'
-    continue
-  fi
-  got="$(grep -F "$anchor" "$skill" | quad_of)"
-  [ "$got" = "$canon_quad" ] || quad_bad="$quad_bad$skill: [$got] != [$canon_quad]"$'\n'
-done
-interrogate="$repo/plugins/pstack/skills/interrogate/SKILL.md"
-got="$(grep -E '^\| Reviewer [A-Z] \|' "$interrogate" | quad_of)"
-[ "$got" = "$canon_quad" ] || quad_bad="$quad_bad$interrogate reviewer table: [$got] != [$canon_quad]"$'\n'
+# No skill restates the quad: the panel skills resolve from the omp lane
+# sheet and dispatch pstack lanes, so the quad survives only as provider
+# dispatch's canonical panel and setup-pstack's first-run reference rows.
 while IFS= read -r line; do
   got="$(printf '%s\n' "$line" | quad_of)"
   [ "$got" = "$canon_quad" ] || quad_bad="$quad_bad$setup role row: [$got] != [$canon_quad]"$'\n'
 done < <(grep -E '^(arena runners|arena cross-judge pool|architect runners|interrogate reviewers|how critics):' "$setup")
 if [ -n "$quad_bad" ]; then
-  note "FAIL: the default model quad is not identical across provider dispatch, the panel skills, and setup-pstack:"
+  note "FAIL: the default model quad is not identical across provider dispatch and setup-pstack:"
   note "$quad_bad"
   fail=1
 else
-  note "ok: default model quad identical across provider dispatch + 3 quad-stating panel skills + setup-pstack ($canon_quad)"
+  note "ok: default model quad identical across provider dispatch + setup-pstack ($canon_quad)"
 fi
 
 plugin="$repo/plugins/pstack"

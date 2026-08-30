@@ -74,7 +74,7 @@ The table uses the short names. Invoke each as `/skill:<name>` (for example `/sk
 | `why` | investigate why something was built this way (parallel multi-MCP evidence) |
 | `architect` | settle types and module shape before writing code that crosses a function boundary |
 | `arena` | run N parallel attempts at the same task and pick the best parts |
-| `interrogate` | have four different models try to break a diff |
+| `interrogate` | have several read-only lanes try to break a diff |
 | `automate-me` | draft your own personal -mode skill from recent transcripts |
 | `reflect` | capture a long task's lessons as a skill edit |
 | `tdd` | fix a bug by writing the failing test first, then the fix |
@@ -142,7 +142,7 @@ The port is editorial, not mechanical. Anywhere upstream pstack assumed Cursor-s
 | Cursor's `/goal` (standing objective across turns) | The program objective written into the run's standing orders and restated in the todolist |
 | The Cursor agent store (path in the system prompt) | `~/.omp/orchestrate/<project-slug>/`, the store directory the orchestrate playbook passes to the `orch` script |
 | Model rule `~/.cursor/rules/pstack-models.mdc` | `task.agentModelOverrides` in `~/.omp/agent/config.yml` |
-| Multi-model panels (arena, architect, interrogate, how-critics) | `arena` resolves its runners and cross-judge from the omp lane sheet and dispatches `pstack-<omp-role>` native lanes; the frontier quad (`claude:claude-fable-5@max`, `codex:gpt-5.6-sol@max`, `grok:grok-4.6@xhigh`, `claude:claude-opus-5@xhigh`) is its explicit cross-provider opt-in through the bundled runner, and the other panels still default to it. |
+| Multi-model panels (arena, architect, interrogate, how-critics) | Every panel skill resolves its lanes from the omp lane sheet and dispatches `pstack-<omp-role>` native agents; `architect` defers to arena's resolution. The frontier quad (`claude:claude-fable-5@max`, `codex:gpt-5.6-sol@max`, `grok:grok-4.6@xhigh`, `claude:claude-opus-5@xhigh`) is the explicit cross-provider opt-in through the bundled runner. |
 
 ### Cross-vendor dispatch
 
