@@ -71,7 +71,7 @@ omp plugin marketplace add hieusats/omp-pstack
 omp plugin install pstack@omp-pstack
 ```
 
-omp discovers the skills under flat names (`/skill:architect`, `skill://poteto-mode` — no `pstack:` prefix) and the twelve agents natively. omp does not execute Claude Code `hooks.json`, so copy the startup mandate from [docs/omp.md](docs/omp.md) into `~/.omp/agent/AGENTS.md`, then run setup-pstack's omp route to map the model lanes in `~/.omp/agent/config.yml`.
+omp discovers the skills under flat names (`/skill:architect`, `skill://poteto-mode` — no `pstack:` prefix) and the twelve agents natively. The startup mandate ships as an always-apply rule (`rules/pstack-session-mandate.md`) that omp injects into every session automatically; see [docs/omp.md](docs/omp.md). Then run setup-pstack's omp route to map the model lanes in `~/.omp/agent/config.yml`.
 
 ## Get started
 
