@@ -1,6 +1,10 @@
 # CHANGES — applied substitutions
 
-This record covers the whole port history. It began as Cursor → Claude Code substitutions, added a Codex build, then a 1.3.0 omp target, and from 2.0.0 omp is the only target. Sections below their release describe the tree as it was at that release; the 2.0.0 section describes the current tree.
+This record covers the whole port history. It began as Cursor → Claude Code substitutions, added a Codex build, then a 1.3.0 omp target, and from 2.0.0 omp is the only target. Sections below their release describe the tree as it was at that release; the 2.1.0 section describes the current tree.
+
+## 2.1.0 keys the native lanes by omp's bundled roles
+
+The ten `pstack-<stem>-<effort>` lane agents are replaced by seven `pstack-<omp-role>` lanes, one per omp bundled agent role: `pstack-scout`, `pstack-designer`, `pstack-reviewer`, `pstack-security-reviewer`, `pstack-librarian`, `pstack-task`, and `pstack-sonic`. Lane frontmatter now routes through omp role aliases (`@smol`, `@slow`, `@designer`, `@task`; `security-reviewer` keeps the session-model fallback) and carries each wrapped role's tool surface, instead of pinning a Cursor-native model and effort grid. The Claude-style `background` and `disallowedTools` fields are dropped because omp's public agent schema ignores them; nested-dispatch denial comes from omitting `task` from each lane's tools, and `pstack-task`, which inherits the session surface, pins `spawns: []` explicitly. `task.agentModelOverrides` remains the single live sheet and now holds seven role keys; the model matrix loses its Agent stem column because a native lane is keyed by role, not by model family. provider-dispatch, poteto-mode, setup-pstack, both docs, README, and NOTICE describe the role lanes, and the structure and model-matrix tests pin the new contract red-first. The version bumps to 2.1.0 so installed plugins refresh.
 
 ## 2.0.0 makes omp the only target; Claude Code and Codex removed
 
