@@ -8,5 +8,7 @@ Before opening a pull request, run the Bun tests, strict typecheck, static invar
 
 Nothing merges, tags, releases, or rolls out until the exact candidate is installed and the changed behavior passes a live test from a real omp session. Unit tests, validators, source inspection, and self-reports do not satisfy this gate. Record the installed version, surface, action, and observed result in the pull request template. A pull request without that evidence remains a draft.
 
+Source edits go through omp's edit tool or `ast_edit`. Never `sed -i`, `perl -i`, or ad-hoc script rewrites on tracked source.
+
 
 Do not add an implicit runtime timeout or a weaker-model fallback.
