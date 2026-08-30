@@ -28,10 +28,10 @@ gh pr list --author "@me" --state all --limit 1000 \
 command -v jq >/dev/null || echo "warn: jq not found; PR column will be empty" >&2
 command -v rg >/dev/null || echo "warn: rg not found; LAST_CHAT column will be empty and no row can bucket verify-recent-chat" >&2
 
-# Transcripts: ~/.claude/projects/<encoded-cwd>/<uuid>.jsonl, where <encoded-cwd> is a
+# Transcripts: ~/.omp/agent/sessions/<encoded-cwd>/*.jsonl, where <encoded-cwd> is a
 # session's cwd with every "/" turned into "-". A session run inside a worktree lives
-# under that worktree's own directory, so scan the whole projects tree, not one repo's.
-transcripts="$HOME/.claude/projects"
+# under that worktree's own directory, so scan the whole sessions tree, not one repo's.
+transcripts="$HOME/.omp/agent/sessions"
 now=$(date +%s)
 
 printf "SIZE\tAGE\tMERGED\tDIRTY\tREMOTE\tPR\tLAST_CHAT\tBUCKET\tWORKTREE\n"

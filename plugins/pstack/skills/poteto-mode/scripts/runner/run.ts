@@ -469,7 +469,7 @@ function completeReceipt(
 ): RunnerReceipt {
   return {
     schemaVersion: 1,
-    parent: options.parent,
+    parent: "omp",
     provider: options.provider,
     model: options.model,
     effort: options.effort,
@@ -482,11 +482,6 @@ function completeReceipt(
 }
 
 export function validateOptions(options: RunnerOptions): void {
-  if (options.parent === options.provider) {
-    throw new UsageError(
-      `provider ${options.provider} is native to parent ${options.parent}; use the parent subagent primitive`
-    );
-  }
   if (options.model.trim().length === 0) throw new UsageError("model must not be empty");
   if (
     options.timeoutMs !== null &&

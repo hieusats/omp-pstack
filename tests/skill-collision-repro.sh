@@ -34,14 +34,13 @@ else
 fi
 
 verof() { { grep -m1 '"version"' "$1" || true; } | sed -E 's/.*"version"[[:space:]]*:[[:space:]]*"([^"]+)".*/\1/'; }
-vc="$(verof "$repo/plugins/pstack/.claude-plugin/plugin.json")"
-vx="$(verof "$repo/plugins/pstack/.codex-plugin/plugin.json")"
-vm="$(verof "$repo/.claude-plugin/marketplace.json")"
-vu="$(sed -n 's/| open-pstack version | `\([^`]*\)` |/\1/p' "$repo/UPSTREAM.md")"
-if [ -n "$vc" ] && [ "$vc" = "$vx" ] && [ "$vc" = "$vm" ] && [ "$vc" = "$vu" ]; then
-  note "ok: open-pstack version matches across UPSTREAM.md and the 3 manifests ($vc)"
+vo="$(verof "$repo/.omp-plugin/marketplace.json")"
+vp="$(verof "$repo/plugins/pstack/.omp-plugin/plugin.json")"
+vu="$(sed -n 's/| omp-pstack version | `\([^`]*\)` |/\1/p' "$repo/UPSTREAM.md")"
+if [ -n "$vp" ] && [ "$vp" = "$vo" ] && [ "$vp" = "$vu" ]; then
+  note "ok: omp-pstack version matches across UPSTREAM.md and the 2 manifests ($vp)"
 else
-  note "FAIL: open-pstack version differs: upstream=$vu claude-plugin=$vc codex-plugin=$vx marketplace=$vm"
+  note "FAIL: omp-pstack version differs: upstream=$vu omp-marketplace=$vo omp-plugin=$vp"
   fail=1
 fi
 
@@ -149,42 +148,5 @@ if [ -n "$bugbot_bad" ]; then
 else
   note "ok: babysit Bugbot binding on the packaged plugin"
 fi
-
-if [ "${PSTACK_STATIC_ONLY:-0}" = "1" ]; then
-  exit "$fail"
-fi
-
-scratch="$(mktemp -d)"
-trap 'rm -rf "$scratch"' EXIT
-mkdir -p "$scratch/.claude-plugin" "$scratch/skills/foo"
-printf '%s\n' '{"name": "testplug", "version": "0.0.1", "description": "native skill repro"}' \
-  > "$scratch/.claude-plugin/plugin.json"
-cat > "$scratch/skills/foo/SKILL.md" <<'EOF'
----
-name: foo
-description: collision test skill
----
-
-Say exactly: SKILL-RAN
-Then stop. Do not invoke any skill or tool.
-EOF
-
-run() {
-  claude -p --plugin-dir "$scratch" --model claude-fable-5 --effort max --max-turns 3 "$1" < /dev/null 2>&1
-}
-
-check() { # $1 label, $2 expected marker, $3 output
-  if printf '%s' "$3" | grep -q "$2"; then
-    note "ok: $1 -> $2"
-  else
-    note "FAIL: $1 expected $2, got: $3"
-    fail=1
-  fi
-}
-
-invoke='Call the Skill tool with skill "testplug:foo" exactly once and follow what it says.'
-
-check "model-initiated Skill-tool invocation" "SKILL-RAN" "$(run "$invoke")"
-check "user /testplug:foo invocation" "SKILL-RAN" "$(run '/testplug:foo')"
 
 exit "$fail"

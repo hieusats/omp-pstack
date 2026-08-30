@@ -4,8 +4,6 @@ import { parseArgs } from "./cli.ts";
 
 function argv(extra: readonly string[] = []): string[] {
   return [
-    "--parent",
-    "claude",
     "--provider",
     "codex",
     "--model",
@@ -39,5 +37,9 @@ describe("runner CLI parsing", () => {
     expect(() => parseArgs(argv(["--timeout", "0"]))).toThrow(
       "greater than zero"
     );
+  });
+
+  it("rejects the removed --parent flag", () => {
+    expect(() => parseArgs(argv(["--parent", "omp"]))).toThrow("--parent");
   });
 });

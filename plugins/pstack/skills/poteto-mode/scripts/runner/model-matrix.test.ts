@@ -18,7 +18,7 @@ const MATRIX_HEADER = [
   "Model",
   "Default effort",
   "Selectable efforts",
-  "Claude-native agent stem",
+  "Agent stem",
 ] as const;
 
 const FAMILY_ORDER = ["fable", "sol", "grok", "opus"] as const;
@@ -315,20 +315,16 @@ describe("model matrix", () => {
     expect(setup).toContain("normalized complete role map from step 2");
     expect(setup).toContain("Every documented role remains present.");
     expect(setup).toContain("An effort-only rerun cannot change a role's family.");
-    expect(setup).toContain("<!-- pstack:models:begin -->");
-    expect(setup).toContain("<!-- pstack:models:end -->");
   });
 
-  it("binds Claude-native dispatch to the matrix mapping", () => {
+  it("binds native dispatch to the matrix mapping", () => {
     const dispatch = readFileSync(DISPATCH_PATH, "utf8");
     const nativeStart = dispatch.indexOf("## Native lanes");
     const externalStart = dispatch.indexOf("## External lanes");
     expect(nativeStart).toBeGreaterThan(-1);
     expect(externalStart).toBeGreaterThan(nativeStart);
     const nativeLanes = dispatch.slice(nativeStart, externalStart);
-    expect(nativeLanes).toContain(
-      "match the descriptor's `(provider, model)` to one model-matrix row"
-    );
     expect(nativeLanes).toContain("`pstack-<stem>-<effort>`");
+    expect(nativeLanes).toContain("task.agentModelOverrides");
   });
 });
