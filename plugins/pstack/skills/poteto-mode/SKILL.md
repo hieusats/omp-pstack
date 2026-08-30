@@ -11,17 +11,17 @@ This distribution targets omp only. Read [`references/provider-dispatch.md`](ref
 
 ## Non-negotiables
 
-**Start every multi-step task with a todolist whose first item is to read the Principles section below in full.** The principles ground every trigger here. In your reply, name the principles that shaped decisions and the choice each changed. A sentence per principle carries both; the justification stays in the work, not the reply. A citation with no decision behind it means you skipped its leaf skill; it must trace to a real choice the leaf's rule drove. Mark items done as they land; never re-init a fresh todolist to summarize completed work.
+**Start every multi-step task with a todolist whose first item is to read the Principles section below in full.** The multi-step floor is objective, not a size judgment: a task is multi-step the moment it dispatches a subagent, runs a command to verify its own work, or edits any file, however small the ask. The principles ground every trigger here. In your reply, name the principles that shaped decisions and the choice each changed. A sentence per principle carries both; the justification stays in the work, not the reply. A citation with no decision behind it means you skipped its leaf skill; it must trace to a real choice the leaf's rule drove. Mark items done as they land; never re-init a fresh todolist to summarize completed work.
 
 Remaining triggers:
 
 - Nontrivial change, architecture decision, or "are we sure?" → the **how** skill.
-- About to `ask` on a "which approach", "how should I", or "what should this do" fork → classify it before you ask. If the answer is a fact you could observe by running something (behavior, timing, layout, output, perf, even whether an eval separates), it is not the human's to answer. Sketch it via the Prototype playbook (`playbooks/prototype.md`) and let the result decide. If the task is a read-only Investigation whose deliverable is a cited answer, stay in it and answer from the evidence rather than building a sketch. Reserve the question for a genuine product or preference call no experiment can settle. The ask is the slow path. A throwaway probe usually answers faster, and it hands the human a result to react to instead of a decision to make.
+- About to `ask` on a "which approach", "how should I", or "what should this do" fork → classify it before you ask. If the answer is a fact you could observe by running something (behavior, timing, layout, output, perf, even whether an eval separates), it is not the human's to answer. Sketch it via the Prototype playbook (`playbooks/prototype.md`) and let the result decide. If the task is a read-only Investigation whose deliverable is a cited answer, stay in it and answer from the evidence rather than building a sketch; answering it directly without routing through `how` still names the skip in the reply as `how skipped: <reason>`. Reserve the question for a genuine product or preference call no experiment can settle. The ask is the slow path. A throwaway probe usually answers faster, and it hands the human a result to react to instead of a decision to make.
 - Any code → name the data shape first, and choose its organizing structure per **principle-model-the-domain**.
 - Code crossing a function boundary → the **architect** skill, parallel design exploration before implementing.
 - Parallel fan-out → the **swarm** skill for coverage matrices, races, gauntlets, and exploration partitions. Use **arena** for design or code bakeoffs with base selection and grafting.
 - Contested design → the **interrogate** skill (multi-model adversarial) before shipping.
-- Nontrivial multi-step → write the throughput checkpoint (Feature step 3).
+- Any task past the multi-step floor → write the throughput checkpoint (Feature step 3). Read-only work with no fan-out keeps it to one line, `throughput checkpoint: n/a, read-only`.
 - Any prose surface → the **unslop** skill. Your reply is a prose surface; write it per **Writing the reply**. Agent-facing prose also keeps SKILL.md authoring discipline: a `name` plus `description` frontmatter, progressive disclosure, and clean comments.
 - Docs, RFCs, readmes, PR descriptions, or commit messages → the **technical-writing** skill (`/technical-writing`).
 - Before commit → the **deslop** skill (`/deslop`).
@@ -104,6 +104,7 @@ Write the reply clean as you draft it. The cleanup-afterward pass has been measu
 - **Terse is not an excuse to drop content.** Every item the playbook's reply names stays. Render each as prose, usually a sentence or two, longer when the content needs it. No section headers, and no item expanded into its own block.
 - **Frame impact for the consumer and the maintainer.** Name who the work is for (an end user, a colleague importing the library) and what changes for them before any implementation detail. Then what the next engineer who owns this code inherits. If you can't say what either would notice, the work or the explanation is off.
 - **Never fabricate a link, citation, or transcript reference.** Link only artifacts you produced or read this session.
+- **Every reply ends with the throughput checkpoint line.** Past the floor it is the Feature step 3 form, as todo items or one closing block; read-only work with no fan-out and below-floor work carry one line, `throughput checkpoint: n/a, <kind>`. A reply without it is not done. Skip markers such as `how skipped: <reason>` ride the same rule; they are part of the reply, not garnish.
 
 Every playbook ends with a reply written this way, PR link as `https://github.com/<owner>/<repo>/pull/<number>`. The per-playbook lines below name only the content unique to that playbook.
 

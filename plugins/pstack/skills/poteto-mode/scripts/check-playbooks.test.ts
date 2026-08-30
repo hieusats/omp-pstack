@@ -75,6 +75,44 @@ describe("second session audit gates", () => {
   });
 });
 
+describe("third session audit gates", () => {
+  const skill = readFileSync(join(import.meta.dir, "..", "SKILL.md"), "utf8");
+
+  it("defines the multi-step floor for the todolist rule", () => {
+    expect(skill).toContain(
+      "the moment it dispatches a subagent, runs a command to verify its own work, or edits any file",
+    );
+  });
+
+  it("anchors the throughput checkpoint to the floor", () => {
+    expect(skill).toContain(
+      "Any task past the multi-step floor → write the throughput checkpoint",
+    );
+  });
+
+  it("investigation step 1 makes a skipped how visible", () => {
+    expect(playbook("investigation")).toContain("how skipped: <reason>");
+  });
+
+  it("names the one-line checkpoint form for read-only floor tasks", () => {
+    expect(skill).toContain("throughput checkpoint: n/a, read-only");
+  });
+
+  it("makes a direct investigation answer without how visible in the reply", () => {
+    expect(skill).toContain(
+      "names the skip in the reply as `how skipped: <reason>`",
+    );
+  });
+});
+
+describe("verifier round reply contract", () => {
+  it("makes the checkpoint line part of the reply format", () => {
+    const skill = readFileSync(join(import.meta.dir, "..", "SKILL.md"), "utf8");
+    expect(skill).toContain("Every reply ends with the throughput checkpoint line");
+    expect(skill).toContain("A reply without it is not done");
+  });
+});
+
 describe("eval blinding survives an upstream sync", () => {
   it("keeps the omp non-isolation warning", () => {
     const text = playbook("eval");
