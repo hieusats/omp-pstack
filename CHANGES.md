@@ -400,6 +400,13 @@ A third audit launched three real `omp -p` sessions running poteto-mode 2.1.4 in
 - **Checkpoint one-liner and reply-level how skip.** A live probe against the candidate build still wrote no checkpoint on a floor-clearing read-only task and answered an investigation without `how` or a skip marker while never opening the playbook. The checkpoint trigger now names the one-line `throughput checkpoint: n/a, read-only` form, and the ask-classification trigger requires a direct investigation answer without `how` to carry `how skipped: <reason>` in the reply.
 - **Regression tests.** `scripts/check-playbooks.test.ts` pins every clause above red-first.
 
+### Verifier round (independent FAIL on the live gate, issue #14)
+
+An independent verifier passed every local gate, the pin review, and the installed-candidate probe for the third-audit build, then watched both live sessions drop the checkpoint line, one acknowledging the rule in thinking before skipping it. The clause lived only in the trigger list, which reply composition does not consult.
+
+- **Reply-contract checkpoint.** "Writing the reply" now ends its bullet list with the rule: every reply ends with the throughput checkpoint line, one-line n/a form for read-only and below-floor work, and skip markers ride the same rule. A reply without it is not done.
+- **Regression tests.** `scripts/check-playbooks.test.ts` pins the clause red-first.
+
 ## Forking note
 
 This port now diverges from upstream pstack content. To track upstream:

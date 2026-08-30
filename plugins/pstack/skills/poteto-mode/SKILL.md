@@ -104,6 +104,7 @@ Write the reply clean as you draft it. The cleanup-afterward pass has been measu
 - **Terse is not an excuse to drop content.** Every item the playbook's reply names stays. Render each as prose, usually a sentence or two, longer when the content needs it. No section headers, and no item expanded into its own block.
 - **Frame impact for the consumer and the maintainer.** Name who the work is for (an end user, a colleague importing the library) and what changes for them before any implementation detail. Then what the next engineer who owns this code inherits. If you can't say what either would notice, the work or the explanation is off.
 - **Never fabricate a link, citation, or transcript reference.** Link only artifacts you produced or read this session.
+- **Every reply ends with the throughput checkpoint line.** Past the floor it is the Feature step 3 form, as todo items or one closing block; read-only work with no fan-out and below-floor work carry one line, `throughput checkpoint: n/a, <kind>`. A reply without it is not done. Skip markers such as `how skipped: <reason>` ride the same rule; they are part of the reply, not garnish.
 
 Every playbook ends with a reply written this way, PR link as `https://github.com/<owner>/<repo>/pull/<number>`. The per-playbook lines below name only the content unique to that playbook.
 
