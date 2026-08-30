@@ -7,13 +7,18 @@ description: Configure pstack's provider-qualified models, per-family requested 
 
 Configure one portable model sheet for omp. Read [`provider-dispatch.md`](../poteto-mode/references/provider-dispatch.md) before probing or writing anything. Its model matrix, descriptor grammar, and route table are the contract. Choose one requested effort per matrix family. Do not add a second configuration file, a runtime resolver, or a weaker-model fallback.
 
-omp (Oh My Pi) has no sheet include and no second file. The live sheet is `task.agentModelOverrides` in `~/.omp/agent/config.yml`, and the ten `pstack-<stem>-<effort>` lane agents are its role surface. Render one row per lane, with the lane's effort as an omp thinking level:
+omp (Oh My Pi) has no sheet include and no second file. The live sheet is `task.agentModelOverrides` in `~/.omp/agent/config.yml`, and the seven `pstack-<omp-role>` lane agents are its role surface. Render one row per lane, with the lane's selector carrying its effort as an omp thinking level:
 
 ```text
 task:
   agentModelOverrides:
-    pstack-fable-<effort>: <provider>/<model>:<effort>
-    pstack-opus-<effort>: <provider>/<model>:<effort>
+    pstack-scout: <provider>/<model>:<effort>
+    pstack-designer: <provider>/<model>:<effort>
+    pstack-reviewer: <provider>/<model>:<effort>
+    pstack-security-reviewer: <provider>/<model>:<effort>
+    pstack-librarian: <provider>/<model>:<effort>
+    pstack-task: <provider>/<model>:<effort>
+    pstack-sonic: <provider>/<model>:<effort>
 ```
 
 ## Steps
@@ -24,7 +29,7 @@ omp is the parent; this distribution installs nowhere else. Confirm the omp tool
 
 ### 2. Load current state
 
-The current state is the set of `pstack-*` keys under `task.agentModelOverrides`. Every key must carry an explicit `:level` suffix from the effort universe, and a key that is not one of the ten shipped lane names is inconsistent state. A bare host-native slug from an older sheet is invalid because it does not say which provider owns it. If the keys are missing, use the complete first-run role map and the model matrix's Default effort cells.
+The current state is the set of `pstack-*` keys under `task.agentModelOverrides`. Every key must carry an explicit `:level` suffix from the effort universe, and a key that is not one of the seven shipped role lane names is inconsistent state. A bare host-native slug from an older sheet is invalid because it does not say which provider owns it. If the keys are missing, use the complete first-run role map and the model matrix's Default effort cells.
 
 ### 3. Parse per-family efforts
 
@@ -44,12 +49,12 @@ Probe only the four selected `provider:model@effort` pairs. Run one probe per fa
 
 | Family | Pair source | omp route | Availability proof |
 |---|---|---|---|
-| Fable | Fable matrix row + selected effort | native `task` lane `pstack-fable-<effort>` | `omp models` lists the selector plus one-turn lane probe |
+| Fable | Fable matrix row + selected effort | native `task` lanes `pstack-<omp-role>` for fable-mapped roles | `omp models` lists the selector plus one-turn lane probe |
 | Sol | Sol matrix row + selected effort | `codex exec` CLI if installed, otherwise a named unconfigured family | `codex login status` plus one-turn probe |
 | Grok | Grok matrix row + selected effort | Grok CLI if installed, otherwise a named unconfigured family | `grok models` must list the requested model; one-turn probe |
-| Opus | Opus matrix row + selected effort | native `task` lane `pstack-opus-<effort>` | `omp models` lists the selector plus one-turn lane probe |
+| Opus | Opus matrix row + selected effort | native `task` lanes `pstack-<omp-role>` for opus-mapped roles | `omp models` lists the selector plus one-turn lane probe |
 
-Use a tiny read-only probe that returns a unique marker. A login-status command alone proves credentials, not that the requested model and effort flags run. Record native and external results separately. Prove every requested selector in the registry first: `omp models` must list it, and one live `omp -p --no-extensions --model <provider>/<model>:<level>` marker probe must print the marker; a selector omp cannot resolve is a failed probe. Native lanes then prove themselves in a one-turn `task` dispatch of the mapped `pstack-<stem>-<effort>` agent.
+Use a tiny read-only probe that returns a unique marker. A login-status command alone proves credentials, not that the requested model and effort flags run. Record native and external results separately. Prove every requested selector in the registry first: `omp models` must list it, and one live `omp -p --no-extensions --model <provider>/<model>:<level>` marker probe must print the marker; a selector omp cannot resolve is a failed probe. Native lanes then prove themselves in a one-turn `task` dispatch of the mapped `pstack-<omp-role>` agent.
 
 Receipts and native transcripts prove the requested effort and the route. They do not prove a provider's hidden applied reasoning depth. There is no implicit timeout, weaker-model fallback, or second mutable configuration source.
 
@@ -64,7 +69,7 @@ After effort selection, ask whether to keep those role-to-family assignments or 
 
 Require the final role map to contain at least one descriptor from each matrix family. The sheet stores effort only in role descriptors, so an unassigned family's selection cannot persist without adding a second source of truth.
 
-Rewrite every matrix-family descriptor to `provider:model@<requested effort for that family>`. Leave `inherit-parent` and `auto` unchanged. An effort-only rerun cannot change a role's family. Changing Grok's effort updates every Grok occurrence and does not move a Sol role onto Grok. Refuse an unqualified slug, an unavailable route, a model other than the four matrix families, or a provider/model mismatch. Render the four family efforts as the ten per-lane rows shown in the sheet format above: the lane name carries the role, and each row's `:level` equals that lane's effort component.
+Rewrite every matrix-family descriptor to `provider:model@<requested effort for that family>`. Leave `inherit-parent` and `auto` unchanged. An effort-only rerun cannot change a role's family. Changing Grok's effort updates every Grok occurrence and does not move a Sol role onto Grok. Refuse an unqualified slug, an unavailable route, a model other than the four matrix families, or a provider/model mismatch. Render the seven per-lane rows shown in the sheet format above: the lane name carries the omp role, its selector comes from that lane's assigned family, and each row's `:level` equals that selector's effort component. On a first run every lane takes the judgment family's selector; a rerun preserves each loaded lane's family, and the operator may point any lane at any probed family.
 
 ### 7. Confirm and commit
 
@@ -101,7 +106,7 @@ interrogate reviewers: claude:claude-fable-5@max, codex:gpt-5.6-sol@max, grok:gr
 
 ### 8. Wire it in
 
-`~/.omp/agent/config.yml` is live config, so the write itself is the wiring. Snapshot the file, merge only the ten `pstack-*` keys under `task.agentModelOverrides`, and note that changes apply to new omp sessions. Read the file back and compare it with the in-memory render. If the write or readback fails, restore the snapshot and report the failure. An unchanged rerun must produce a byte-identical config after normalization.
+`~/.omp/agent/config.yml` is live config, so the write itself is the wiring. Snapshot the file, merge only the seven `pstack-*` lane keys under `task.agentModelOverrides`, and note that changes apply to new omp sessions. Read the file back and compare it with the in-memory render. If the write or readback fails, restore the snapshot and report the failure. An unchanged rerun must produce a byte-identical config after normalization.
 
 Do not copy the model sheet between machines without rerunning the probes; route availability can differ per host.
 

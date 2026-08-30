@@ -1,12 +1,12 @@
 ---
-name: pstack-fable-xhigh
-description: Native Claude lane for pstack roles configured as claude:claude-fable-5@xhigh.
-model: claude-fable-5
-effort: xhigh
+name: pstack-sonic
+description: Native pstack lane wrapping omp's sonic agent for pstack dispatch.
+model: "@smol"
+tools: read, grep, glob, edit, write
 background: true
 disallowedTools: Agent, Task
 ---
 
-# pstack Fable lane
+# pstack role lane
 
 Execute only the task and path scope the parent assigns. Read the grounding artifacts by path. Do not choose another model, spawn another agent, or start a pstack workflow. If the assignment is read-only, do not modify files. Return the requested artifact or verdict plus a concise rationale.
