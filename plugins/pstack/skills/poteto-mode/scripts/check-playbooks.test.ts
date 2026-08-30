@@ -134,6 +134,16 @@ describe("loop round two universal checkpoint", () => {
   });
 });
 
+describe("verifier round inventory depth", () => {
+  it("grounds inventories in labels and structure, not file bodies", () => {
+    const skill = readFileSync(join(import.meta.dir, "..", "SKILL.md"), "utf8");
+    expect(skill).toContain(
+      "An inventory works from names and structure, not file bodies",
+    );
+    expect(skill).toContain("open the range that answers, not the whole file");
+  });
+});
+
 describe("eval blinding survives an upstream sync", () => {
   it("keeps the omp non-isolation warning", () => {
     const text = playbook("eval");
