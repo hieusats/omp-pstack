@@ -3,17 +3,17 @@
   "owner": {
     "name": "Eric Litman"
   },
-  "description": "Pstack for Claude Code, Codex, and omp, tracking Cursor's upstream pstack.",
+  "description": "Pstack for omp, tracking Cursor's upstream pstack. omp-only distribution.",
   "plugins": [
     {
       "name": "pstack",
       "source": "./plugins/pstack",
       "description": "if you want to go fast, go deep first. pstack helps you write less, but higher quality code. rigorous agent workflows you can parallelize with confidence.",
-      "version": "1.2.1",
+      "version": "2.0.0",
       "author": {
         "name": "Lauren Tan (original)"
       },
-      "homepage": "https://github.com/ericlitman/open-pstack",
+      "homepage": "https://github.com/hieusats/omp-pstack",
       "license": "MIT",
       "keywords": [
         "pstack",

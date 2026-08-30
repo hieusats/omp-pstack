@@ -1,13 +1,11 @@
 ---
 name: babysit
-description: Watch an open PR — fix failing CI, handle the straightforward review comments, and drive it to a mergeable state. Claude Code analog of Cursor's built-in /babysit. Use after opening a PR when the user wants the agent to shepherd it without re-prompting.
+description: Watch an open PR — fix failing CI, handle the straightforward review comments, and drive it to a mergeable state. Use after opening a PR when the user wants the agent to shepherd it without re-prompting.
 ---
 
 # Babysit a PR
 
-Claude Code analog of Cursor's built-in `/babysit`. The implementation is a loop over `gh` CLI plus the Claude Code `loop` skill for pacing.
-
-**Platform note.** On Codex or another non-Claude runtime, the Claude tool names and Claude built-in skills named below (`loop`, `AskUserQuestion`) are Claude defaults. Resolve them via [`codex-tools.md`](../poteto-mode/references/codex-tools.md).
+An omp analog of Cursor's built-in `/babysit`. The implementation is a loop over `gh` CLI with paced re-check rounds.
 
 Inside poteto-mode, the **Babysit** playbook ([`../poteto-mode/playbooks/babysit.md`](../poteto-mode/playbooks/babysit.md)) supersedes this skill: it owns mode declaration, the merge frontier, stack safety, and the `watch-pr` watcher. This skill stays the standalone `/babysit` entry point for a single PR outside a poteto-mode run.
 
@@ -31,7 +29,7 @@ Inside poteto-mode, the **Babysit** playbook ([`../poteto-mode/playbooks/babysit
    - Review comments from human reviewers (`gh pr view --json comments,reviews`): act only on feedback you actually agree with. When a comment has a single mechanical answer — a rename, a guard clause, a formatting nit — make the edit and quote the comment in the commit message. When it hinges on a judgement call, or you can't tell what's being asked, don't guess: leave it and reply with what you would have done.
    - Review-bot comments (Bugbot and similar automation): classify as fix, dismiss, or ask before acting, per [`../poteto-mode/references/bugbot-triage.md`](../poteto-mode/references/bugbot-triage.md). Follow the rubric's Ask by default categories, including security, data, and high-severity findings.
 
-3. **Loop.** Use the Claude Code `loop` skill to pace re-checks. Pick the interval from what you're watching:
+3. **Loop.** Repeat the check on a fixed interval until a stop condition in step 4 hits. Pick the interval from what you're watching:
    - Active CI run: poll `gh pr checks --watch` (it blocks until checks finish, so no separate loop interval needed).
    - Awaiting reviewer: 20–30 min heartbeat.
    - Idle but want to catch new comments: hourly.
@@ -39,7 +37,7 @@ Inside poteto-mode, the **Babysit** playbook ([`../poteto-mode/playbooks/babysit
 4. **When to stop.**
    - Build is green, every comment resolved, branch merges cleanly → call it ready.
    - You've run three rounds of fix → push → recheck and it still isn't fully green → stop, summarise what's still broken, and hand control back.
-   - The next fix would force a design choice → pause and put it to the user with `AskUserQuestion`.
+   - The next fix would force a design choice → pause and put it to the user with the `ask` tool.
 
 5. **Report.** Summarize fixes applied, comments addressed, comments deferred (with reason), current PR status. Cite each commit by SHA.
 
@@ -59,4 +57,4 @@ Inside poteto-mode, the **Babysit** playbook ([`../poteto-mode/playbooks/babysit
 
 ## Provenance
 
-This is a Claude Code analog of Cursor's `/babysit`, not a port — Cursor's implementation is closed source. The skill is independently authored, with its own prose and structure; the workflow is informed by Cursor's public `/babysit` behavior. The only overlap with other PR tools is the `gh` CLI commands it runs, which are functional invocations rather than copied text.
+This is an omp analog of Cursor's `/babysit`, not a port — Cursor's implementation is closed source. The skill is independently authored, with its own prose and structure; the workflow is informed by Cursor's public `/babysit` behavior. The only overlap with other PR tools is the `gh` CLI commands it runs, which are functional invocations rather than copied text.

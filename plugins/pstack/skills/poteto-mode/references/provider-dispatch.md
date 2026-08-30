@@ -8,38 +8,32 @@ pstack model choices are provider-qualified descriptors:
 
 ## Model matrix
 
-| Family | Upstream pstack choice | Provider | Model | Default effort | Selectable efforts | Claude-native agent stem |
+| Family | Upstream pstack choice | Provider | Model | Default effort | Selectable efforts | Agent stem |
 |---|---|---|---|---|---|---|
 | fable | claude-fable-5-thinking-max | claude | claude-fable-5 | max | low medium high xhigh max | fable |
 | sol | gpt-5.6-sol-max | codex | gpt-5.6-sol | max | low medium high xhigh max | - |
 | grok | grok-4.6-fast-xhigh | grok | grok-4.6 | xhigh | low medium high xhigh max | - |
 | opus | claude-opus-5-thinking-xhigh | claude | claude-opus-5 | xhigh | low medium high xhigh max | opus |
 
-The allowed effort universe is exactly `low`, `medium`, `high`, `xhigh`, `max`. First-run requested efforts are the Default effort cell of each row. A Claude-native agent stem of `-` means the family has no Claude-native agent. Otherwise the shipped agent name is `pstack-<stem>-<effort>`.
+The allowed effort universe is exactly `low`, `medium`, `high`, `xhigh`, `max`. First-run requested efforts are the Default effort cell of each row. An agent stem of `-` means the family has no shipped lane agent. Otherwise the shipped agent name is `pstack-<stem>-<effort>`.
 
 `fast` is part of Cursor's Grok selector, not a Grok Build CLI model or effort flag. The portable Grok route pins the current CLI model `grok-4.6`. The first-run Grok effort is `xhigh`.
 
 ## The parent owns the route
 
-The top-level harness resolves the route once. A child receives an assigned provider, model, effort, access mode, prompt, working directory, and output path. A child never detects the harness, chooses a provider, or launches another model. Environment markers may corroborate the top-level harness before fan-out, but nested processes inherit parent markers and must not use them for routing.
+omp is the only parent in this distribution. It resolves the route once. A child receives an assigned provider, model, effort, access mode, prompt, working directory, and output path. A child never detects the harness, chooses a provider, or launches another model. Environment markers may corroborate the top-level harness before fan-out, but nested processes inherit parent markers and must not use them for routing.
 
 | Parent | `claude:*` | `codex:*` | `grok:*` |
 |---|---|---|---|
-| Claude Code | native `Agent` | external runner | external runner |
-| Codex | external runner | native `spawn_agent` | external runner |
 | omp | native `task` lane | external runner | external runner |
 
 `inherit-parent` and `auto` remain aliases. They use the parent's current model and effort through its native subagent primitive. In a panel they still consume one lane, but they reduce provider diversity; say so in the synthesis record.
 
 ## Native lanes
 
-Native dispatch avoids a second CLI startup and its base context.
+Native dispatch avoids a second CLI startup and its base context. Dispatch `pstack-<stem>-<effort>` as native `task` agents, the shipped definitions discovered from the plugin's `agents/` directory. Model and effort resolution comes from `task.agentModelOverrides` in `~/.omp/agent/config.yml`, written by `setup-pstack`. omp silently runs a lane on the parent model when its mapping is missing, so treat an unmapped lane as unconfigured, never as `inherit-parent`. Fan out with one multi-item `task` dispatch; results arrive as background job results and are drained after fan-out.
 
-- Claude Code: match the descriptor's `(provider, model)` to one model-matrix row, then dispatch it through `pstack-<stem>-<effort>` using that row's Claude-native agent stem and the descriptor's effort. Those definitions pin model, effort, and `background: true`. `pstack-fable-max` and `pstack-opus-xhigh` remain in that set. Pass the complete task, grounding paths, access mode, and unique output location in the `Agent` prompt. Retain the task handle and drain it only after fan-out.
-- Codex: call `spawn_agent` with the descriptor's model and `reasoning_effort`, the complete task, grounding paths, access mode, and unique output location. Use an isolated worktree for a writer. Codex subagents already run concurrently.
-- omp: dispatch `pstack-<stem>-<effort>` as native `task` agents — the same shipped definitions, discovered from the plugin's `agents/` directory. Model and effort resolution comes from `task.agentModelOverrides` in `~/.omp/agent/config.yml`, written by the omp route of `setup-pstack`. omp silently runs a lane on the parent model when its mapping is missing, so treat an unmapped lane as unconfigured, never as `inherit-parent`. Fan out with one multi-item `task` dispatch; results arrive as background job results and are drained after fan-out.
-
-Do not send a same-provider descriptor to the external runner. It rejects that call because the native route is cheaper and already available.
+Do not send a descriptor that a native lane serves to the external runner. The native route is cheaper and already available.
 
 ## External lanes
 
@@ -47,7 +41,6 @@ The launcher lives at `skills/poteto-mode/scripts/runner/pstack-runner` under th
 
 ```text
 pstack-runner \
-  --parent <claude|codex> \
   --provider <claude|codex|grok> \
   --model <real CLI model> \
   --effort <low|medium|high|xhigh|max> \
@@ -67,14 +60,13 @@ The parent tool sandbox still governs whether a subscribed child CLI can reach i
 
 The parent invocation must itself be resumable background work:
 
-- Claude Code: call the launcher through a Bash tool invocation with `run_in_background: true` and retain its task ID. A foreground Bash tool call has an automatic ten-minute ceiling even when the runner's own timeout is longer. Shelling out with `&` and losing the task handle is not equivalent.
-- Codex: run the launcher in a persistent exec session that returns a session ID, then wait or poll that handle. Do not hold one foreground tool call open for the model's full runtime.
+- omp: run the launcher through a `bash` call with `async: true` and retain the job handle it returns. Launch every lane first, then drain the handles. Shelling out with `&` and losing the handle is not equivalent.
 
 Start the background process, continue launching the other lanes, then drain their handles. Native and external lanes belong in the same fan-out phase.
 
-The runner and its preflight have no implicit timeout. Do not invent a duration from role, mode, or a convenient round number; real implementation lanes can run for 90 minutes or much longer. Pass `--timeout` only when the user, an external service deadline, or a measured task contract supplies a real bound. That value starts at wrapper entry, before module loading and argument parsing, and remains one absolute deadline across setup, preflight, model execution, and output capture. It is never a fresh allowance per child, and long waits are armed in runtime-safe chunks without shortening the supplied deadline. Otherwise supervise liveness through the retained background task/session handle and cancel manually only on evidence that the run is dead. Cancel through that retained handle so the runner receives SIGINT or SIGTERM, sends it to an active child when one remains, stops waiting on inherited output pipes, removes the empty output reservation, and writes a `cancelled` receipt. Preserve that receipt; a retry is a new attempt with new unique output and receipt paths. Unchanged running state is not a dropout, and Claude's ten-minute foreground ceiling is never a reason to terminate a healthy lane.
+The runner and its preflight have no implicit timeout. Do not invent a duration from role, mode, or a convenient round number; real implementation lanes can run for 90 minutes or much longer. Pass `--timeout` only when the user, an external service deadline, or a measured task contract supplies a real bound. That value starts at wrapper entry, before module loading and argument parsing, and remains one absolute deadline across setup, preflight, model execution, and output capture. It is never a fresh allowance per child, and long waits are armed in runtime-safe chunks without shortening the supplied deadline. Otherwise supervise liveness through the retained background job handle and cancel manually only on evidence that the run is dead. Cancel through that retained handle so the runner receives SIGINT or SIGTERM, sends it to an active child when one remains, stops waiting on inherited output pipes, removes the empty output reservation, and writes a `cancelled` receipt. Preserve that receipt; a retry is a new attempt with new unique output and receipt paths. Unchanged running state is not a dropout, and a foreground tool call's own ceiling is never a reason to terminate a healthy lane.
 
-Read-only mode maps to Claude plan mode with project-only settings and an explicit tool list, Codex's read-only sandbox, and Grok plan mode plus its `read-only` sandbox and read-oriented tool list. Grok's built-in read-only profile deliberately keeps its own state and system temporary directories writable, so point a read-only Grok lane at the actual checkout rather than a worktree under `/tmp`, `/var/tmp`, or the host's temporary directory. `isolated-write` maps to Claude `acceptEdits` with project-only settings, Codex `workspace-write`, and Grok `acceptEdits` plus its `workspace` sandbox and write-capable tool list. Give every writer only a dedicated worktree or output directory. Never route a writer into the primary checkout.
+Read-only mode maps to the claude CLI's plan mode with project-only settings and an explicit tool list, the codex CLI's read-only sandbox, and Grok plan mode plus its `read-only` sandbox and read-oriented tool list. Grok's built-in read-only profile deliberately keeps its own state and system temporary directories writable, so point a read-only Grok lane at the actual checkout rather than a worktree under `/tmp`, `/var/tmp`, or the host's temporary directory. `isolated-write` maps to the claude CLI's `acceptEdits` with project-only settings, the codex CLI's `workspace-write`, and Grok `acceptEdits` plus its `workspace` sandbox and write-capable tool list. Give every writer only a dedicated worktree or output directory. Never route a writer into the primary checkout.
 
 Every concurrent external lane needs distinct prompt, output, and receipt paths. The launcher reserves output and receipt paths exclusively and refuses to overwrite them.
 
@@ -84,7 +76,7 @@ Success requires all of these:
 
 1. Exit status `0`.
 2. Receipt status `complete`.
-3. Either `modelVerified: true` with `modelEvidence: "provider-report"`, or a Codex receipt with `reportedModel: null`, `modelVerified: false`, and `modelEvidence: "pinned-argv"`. Codex 0.149.0 accepts the exact `--model` argument but does not report the served model in its JSONL stream.
+3. Either `modelVerified: true` with `modelEvidence: "provider-report"`, or a codex-CLI receipt with `reportedModel: null`, `modelVerified: false`, and `modelEvidence: "pinned-argv"`. The codex CLI 0.149.0 accepts the exact `--model` argument but does not report the served model in its JSONL stream.
 4. A non-empty output file.
 
 The receipt also carries elapsed time, token usage when the CLI exposes it, and cost when available. Keep it with the arena or review artifacts so parent-harness comparisons are evidence-based.

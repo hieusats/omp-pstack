@@ -7,7 +7,7 @@ description: "Use for \"how does X work\", code walkthroughs before changing som
 
 Explore the codebase to answer "how does X work?" questions. Produce clear architectural explanations at the level of a senior engineer onboarding onto a subsystem. Enough to build a working mental model, not annotated source code.
 
-**Dispatch contract.** Resolve every configured role through [`provider-dispatch.md`](../poteto-mode/references/provider-dispatch.md). Values are provider-qualified descriptors; the parent chooses native versus external execution. On Codex, resolve remaining Claude tool names via [`codex-tools.md`](../poteto-mode/references/codex-tools.md).
+**Dispatch contract.** Resolve every configured role through [`provider-dispatch.md`](../poteto-mode/references/provider-dispatch.md). Values are provider-qualified descriptors; the parent chooses native versus external execution.
 
 Two modes:
 

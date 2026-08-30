@@ -131,7 +131,6 @@ function makeExecutable(name: string): void {
 }
 
 function options(provider: Provider, suffix: string = provider): RunnerOptions {
-  const parent = provider === "codex" ? "claude" : "codex";
   const model =
     provider === "claude"
       ? "claude-fable-5"
@@ -139,7 +138,6 @@ function options(provider: Provider, suffix: string = provider): RunnerOptions {
         ? "gpt-5.6-sol"
         : "grok-4.6";
   return {
-    parent,
     provider,
     model,
     effort: provider === "grok" ? "xhigh" : "max",
@@ -159,7 +157,6 @@ function receipt(path: string): RunnerReceipt {
 function runnerArgs(input: RunnerOptions): string[] {
   const args = [
     join(import.meta.dir, "pstack-runner"),
-    "--parent", input.parent,
     "--provider", input.provider,
     "--model", input.model,
     "--effort", input.effort,
@@ -883,10 +880,6 @@ describe("runLane", () => {
     expect(receipt(retry.receiptPath).status).toBe("complete");
   });
 
-  it("rejects same-provider recursion", async () => {
-    const input = { ...options("claude"), parent: "claude" as const };
-    await expect(runLane(input)).rejects.toThrow("native to parent");
-  });
 });
 
 describe("childEnvironment", () => {

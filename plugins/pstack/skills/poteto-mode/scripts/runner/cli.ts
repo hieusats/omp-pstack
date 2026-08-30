@@ -3,17 +3,15 @@ import { resolvedOptions, runLane } from "./run.ts";
 import {
   ACCESS_MODES,
   EFFORTS,
-  PARENTS,
   PROVIDERS,
   type AccessMode,
   type Effort,
-  type Parent,
   type Provider,
   type RunnerOptions,
   UsageError,
 } from "./types.ts";
 
-const HELP = `Usage: pstack-runner --parent <claude|codex> --provider <claude|codex|grok> \\
+const HELP = `Usage: pstack-runner --provider <claude|codex|grok> \\
   --model <slug> --effort <level> --mode <read-only|isolated-write> \\
   --prompt <file> --cwd <dir> --output <file> --receipt <file> [--timeout <seconds>]
 
@@ -64,7 +62,6 @@ export function parseArgs(argv: readonly string[]): RunnerOptions | null {
       allowPositionals: false,
       strict: true,
       options: {
-        parent: { type: "string" },
         provider: { type: "string" },
         model: { type: "string" },
         effort: { type: "string" },
@@ -95,7 +92,6 @@ export function parseArgs(argv: readonly string[]): RunnerOptions | null {
     throw new UsageError("timeout must be a number greater than zero");
   }
   return resolvedOptions({
-    parent: oneOf("parent", stringValue(parsed.values.parent), PARENTS) as Parent,
     provider: oneOf("provider", stringValue(parsed.values.provider), PROVIDERS) as Provider,
     model: required("model", stringValue(parsed.values.model)),
     effort: oneOf("effort", stringValue(parsed.values.effort), EFFORTS) as Effort,
