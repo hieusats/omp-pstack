@@ -58,6 +58,23 @@ describe("skill-level dispatch and edit rules", () => {
   });
 });
 
+describe("second session audit gates", () => {
+  it("feature step 1 makes a skipped how visible", () => {
+    expect(playbook("feature")).toContain("how skipped: <reason>");
+  });
+
+  it("pins the edit-anchor discipline", () => {
+    const skill = readFileSync(join(import.meta.dir, "..", "SKILL.md"), "utf8");
+    expect(skill).toContain("content-hash tag from the latest `read` or `write` response");
+    expect(skill).toContain("`:raw` is a `read` selector, never an edit header");
+  });
+
+  it("bans re-initializing the todolist to summarize completion", () => {
+    const skill = readFileSync(join(import.meta.dir, "..", "SKILL.md"), "utf8");
+    expect(skill).toContain("never re-init a fresh todolist to summarize completed work");
+  });
+});
+
 describe("eval blinding survives an upstream sync", () => {
   it("keeps the omp non-isolation warning", () => {
     const text = playbook("eval");
