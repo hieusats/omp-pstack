@@ -43,11 +43,10 @@ Plugin-internal `skills/<name>/` path references in the docs below are relative 
 The `skills/` tree is the only workflow source; no `commands/` layer ships. Skill prose names omp tools directly (`read`, `write`, `edit`, `bash`, `grep`, `glob`, `task`, `todo`, `ask`, `browser`), and skills resolve under flat names: `skill://poteto-mode`, `/skill:poteto-mode`, `/skill:architect`.
 
 - **Skill invocation.** omp loads `SKILL.md` natively. Invoke a skill with `/skill:<name>`, by asking for it by name, or by reading `skill://<name>`.
-- **Package surface.** The `principle-*` leaves declare `user-invocable: false`; they are model-read context for `poteto-mode`, not user-facing entries.
 - **Subagents.** The `task` tool with a named `agent` dispatches the shipped agents. Parallel fan-out is one multi-item `tasks[]` dispatch. If a native lane is unmapped in `task.agentModelOverrides`, record that lane as unconfigured; external lanes still run, and no provider is silently substituted. For an ad-hoc subagent in poteto style, dispatch `poteto-agent` or a `task` worker told to read `poteto-mode` first.
 - **Models.** `setup-pstack` asks one requested effort per frontier family (`low`, `medium`, `high`, `xhigh`, `max`) and writes the ten `pstack-*` rows under `task.agentModelOverrides` in `~/.omp/agent/config.yml`. The first-run panel is Fable 5 max, GPT-5.6 Sol max, Grok 4.6 xhigh, and Opus 5 xhigh. Lane agents mapped to selectors run as native omp task agents; the codex and Grok families run through the deterministic external runner. Children never detect the parent or reroute themselves.
 
-Verified in fresh installed omp sessions: the user-facing skills are discovered under flat names, the twelve agents are native task agents, the mandate rule is injected without any manual step, and the frontier quad fans out through the documented native/external route table with retained background handles and no default timeout.
+Verified in fresh installed omp sessions at 2.0.0: the user-facing skills are discovered under flat names, the twelve agents are native task agents, the mandate rule is injected without any manual step, and `skill://setup-pstack` serves the omp-only flow. External lanes follow the runner contract with receipts; on hosts where an external CLI is unauthenticated, the lane is a recorded dropout, never a silent substitution.
 
 ## Dependencies
 
@@ -141,7 +140,7 @@ The port is editorial, not mechanical. Anywhere upstream pstack assumed Cursor-s
 | MCP discovery via Cursor's `mcps/` directory | `mcp://` internal URLs and the MCP tools in the system prompt |
 | Cursor cloud agents (`environment: "cloud"`, `cloud_base_branch`) | local background `task` jobs, isolated by git worktree |
 | Cursor's `/goal` (standing objective across turns) | The program objective written into the run's standing orders and restated in the todolist |
-| The Cursor agent store (path in the system prompt) | `~/.claude/orchestrate/<project-slug>/` convention retained by the orchestrate playbook |
+| The Cursor agent store (path in the system prompt) | `~/.omp/orchestrate/<project-slug>/`, the store directory the orchestrate playbook passes to the `orch` script |
 | Model rule `~/.cursor/rules/pstack-models.mdc` | `task.agentModelOverrides` in `~/.omp/agent/config.yml` |
 | Multi-model panels (arena, architect, interrogate, how-critics) | Provider dispatch keeps the upstream frontier quad: `claude:claude-fable-5@max`, `codex:gpt-5.6-sol@max`, `grok:grok-4.6@xhigh`, `claude:claude-opus-5@xhigh`. Lane agents run native; external lanes use the bundled runner. |
 

@@ -23,7 +23,7 @@ Skip when the conversation is trivial, off-topic, or already covered by an exist
 
 ### 1. Locate the active transcript
 
-The parent finds its own transcript file before fanning out. Your runtime's transcript directory holds per-project transcript directories; use the one for the current project. Do not glob across other projects' transcript directories. That crosses workspace boundaries and reads private chats from unrelated projects.
+The parent finds its own transcript file before fanning out. Transcripts live under `~/.omp/agent/sessions/<encoded-cwd>/` (the project cwd with every `/` turned into `-`); use the one for the current project. Do not glob across other projects' transcript directories. That crosses workspace boundaries and reads private chats from unrelated projects.
 
 ```bash
 ls -t <transcript-dir>/*.jsonl 2>/dev/null | head -10
