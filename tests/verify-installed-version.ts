@@ -11,37 +11,68 @@ const compareSemver = (a: string[], b: string[]): number => {
   return 0;
 };
 
+const semverParts = (value: string): string[] | null => {
+  const parts = value.split(".");
+  return parts.length === 3 && parts.every((part) => /^\d+$/.test(part))
+    ? parts
+    : null;
+};
+
 const newestSemver = (values: string[]): string | null => {
   const parts = values
-    .map((value) => value.split("."))
-    .filter((parts) => parts.length === 3 && parts.every((part) => /^\d+$/.test(part)));
+    .map(semverParts)
+    .filter((parts): parts is string[] => parts !== null);
   if (parts.length === 0) return null;
   parts.sort(compareSemver);
   return parts[parts.length - 1].join(".");
 };
 
-export function servedVersion(listJson: string): string | null {
+type InstallEntry = { version: string; installPath: string };
+
+const pstackEntries = (listJson: string): InstallEntry[] => {
   let parsed: unknown;
   try {
     parsed = JSON.parse(listJson);
   } catch {
-    return null;
+    return [];
   }
   const marketplace =
     typeof parsed === "object" && parsed !== null
       ? (parsed as { marketplace?: unknown }).marketplace
       : undefined;
-  if (!Array.isArray(marketplace)) return null;
-  const versions = marketplace
+  if (!Array.isArray(marketplace)) return [];
+  return marketplace
     .filter(
-      (entry): entry is { entries?: Array<{ version?: unknown }> } =>
+      (entry): entry is { entries?: Array<{ version?: unknown; installPath?: unknown }> } =>
         typeof entry === "object" &&
         entry !== null &&
         (entry as { id?: unknown }).id === "pstack@omp-pstack",
     )
     .flatMap((entry) => (Array.isArray(entry.entries) ? entry.entries : []))
-    .map((entry) => (typeof entry.version === "string" ? entry.version : ""));
-  return newestSemver(versions);
+    .filter(
+      (entry): entry is InstallEntry =>
+        typeof entry.version === "string" &&
+        typeof entry.installPath === "string",
+    );
+};
+export function servedVersion(listJson: string): string | null {
+  return newestSemver(pstackEntries(listJson).map((entry) => entry.version));
+}
+
+const byVersionDesc = (a: InstallEntry, b: InstallEntry): number =>
+  compareSemver(b.version.split("."), a.version.split("."));
+
+
+export function activeInstall(
+  listJson: string,
+): (InstallEntry & { linked: boolean }) | null {
+  const entries = pstackEntries(listJson)
+    .filter((entry) => semverParts(entry.version) !== null)
+    .sort(byVersionDesc);
+  const active = entries[0];
+  if (active === undefined) return null;
+  const base = active.installPath.split("/").pop() ?? "";
+  return { ...active, linked: !base.startsWith(CACHE_PREFIX) };
 }
 
 export function newestCacheVersion(dirs: string[]): string | null {
@@ -75,9 +106,10 @@ if (import.meta.main) {
     ),
   ) as { version: string };
   const repo = manifest.version;
-  const listed = servedVersion(
+  const install = activeInstall(
     Bun.spawnSync(["omp", "plugin", "list", "--json"]).stdout.toString(),
   );
+  const listed = install?.version ?? null;
   const cacheRoot = join(
     process.env.HOME ?? "",
     ".omp",
@@ -85,11 +117,23 @@ if (import.meta.main) {
     "cache",
     "plugins",
   );
-  const cache = existsSync(cacheRoot)
-    ? newestCacheVersion(readdirSync(cacheRoot))
-    : null;
-  const verdict = compareVersions(repo, listed, cache);
-  console.log(`pstack repo ${repo} | served ${listed ?? "none"} | cache ${cache ?? "none"}`);
+  let source: string | null = null;
+  if (install?.linked === true) {
+    source = (
+      JSON.parse(
+        readFileSync(
+          join(install.installPath, "plugins", "pstack", ".omp-plugin", "plugin.json"),
+          "utf8",
+        ),
+      ) as { version: string }
+    ).version;
+  } else if (existsSync(cacheRoot)) {
+    source = newestCacheVersion(readdirSync(cacheRoot));
+  }
+  const verdict = compareVersions(repo, listed, source);
+  console.log(
+    `pstack repo ${repo} | served ${listed ?? "none"} | ${install?.linked === true ? "linked" : "cache"} ${source ?? "none"}`,
+  );
   if (!verdict.ok) {
     for (const reason of verdict.reasons) console.error(reason);
     console.error(
