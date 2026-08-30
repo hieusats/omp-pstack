@@ -25,7 +25,7 @@ Update mode changes the rest of the flow:
 
 ### 1. Mine their history
 
-Locate the active workspace's transcripts before fanning out. Your runtime stores them under its per-project transcript directory, one JSONL file per chat. Use only the current workspace's directory. Don't glob across sibling projects' transcript directories. That crosses workspace boundaries and reads private chats from unrelated projects.
+Locate the active workspace's transcripts before fanning out: `~/.omp/agent/sessions/<encoded-cwd>/` (the workspace cwd with every `/` turned into `-`), one JSONL file per chat. Use only the current workspace's directory. Don't glob across sibling projects' transcript directories. That crosses workspace boundaries and reads private chats from unrelated projects.
 
 Survey recent agent conversations within that scope for recurring patterns. Run multiple parallel subagents across slices of history (e.g. last 2-4 weeks, split into 3 slices so each has enough material). Each slice mining subagent reads transcripts from the workspace-scoped path the parent provides, looks for the signals below, and returns a short structured list of patterns it saw with evidence pointers. Default signals worth hunting:
 
@@ -65,7 +65,7 @@ The **poteto-mode** skill shows the shape. Read it for granularity. Don't copy i
 
 Author the skill with SKILL.md authoring discipline (name plus description frontmatter, progressive disclosure). Placement:
 
-- Path: preserve an existing mode skill's category. For a new mode, use `skills/<handle>/<handle>-mode/SKILL.md` when the repo has an established personal category for that handle; otherwise default to `skills/<handle>-mode/SKILL.md` in the project (or your personal skills directory if the user prefers a personal skill).
+- Path: preserve an existing mode skill's category. For a new mode, use `.omp/skills/<handle>/<handle>-mode/SKILL.md` when the repo has an established personal category for that handle; otherwise default to `.omp/skills/<handle>-mode/SKILL.md`. A purely personal mode skill can instead live at `~/.omp/agent/skills/<handle>-mode/SKILL.md`.
 - Handle: the user's first name or chosen identifier.
 - Frontmatter `description`: trigger on their name + `/<handle>-mode` + "work in their style", not on generic keywords like "write code" or "review PR".
 - Frontmatter formatting: follow SKILL.md frontmatter rules. Keep `description` as one YAML scalar; quote it or use `description: >-` with indented continuation lines when punctuation or wrapping requires it.

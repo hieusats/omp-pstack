@@ -1,8 +1,8 @@
 # omp-pstack
 
-[![CI](https://github.com/ericlitman/open-pstack/actions/workflows/ci.yml/badge.svg)](https://github.com/ericlitman/open-pstack/actions/workflows/ci.yml)
-[![Latest release](https://img.shields.io/github/v/release/ericlitman/open-pstack)](https://github.com/ericlitman/open-pstack/releases/latest)
-[![MIT license](https://img.shields.io/github/license/ericlitman/open-pstack)](LICENSE)
+[![CI](https://github.com/hieusats/omp-pstack/actions/workflows/ci.yml/badge.svg)](https://github.com/hieusats/omp-pstack/actions/workflows/ci.yml)
+[![Latest release](https://img.shields.io/github/v/release/hieusats/omp-pstack)](https://github.com/hieusats/omp-pstack/releases/latest)
+[![MIT license](https://img.shields.io/github/license/hieusats/omp-pstack)](LICENSE)
 
 **omp-pstack brings [Lauren Tan (@poteto)](https://x.com/poteto)'s [pstack](https://github.com/cursor/plugins/tree/main/pstack) to omp (Oh My Pi).** Its job is to stay as close to her original work as possible while translating the parts that depend on Cursor. Since 2.0.0 this is an omp-only distribution; the Claude Code and Codex targets are gone.
 
@@ -114,7 +114,7 @@ In this repository, “upstream” means Lauren's original pstack. omp-pstack do
 
 ## Contributing
 
-Fixes for the omp distribution and help bringing over new pstack releases are welcome. Search [GitHub Issues](https://github.com/ericlitman/open-pstack/issues) before opening a new issue. For larger behavior changes, explain why the change belongs here instead of Lauren's original project.
+Fixes for the omp distribution and help bringing over new pstack releases are welcome. Search [GitHub Issues](https://github.com/hieusats/omp-pstack/issues) before opening a new issue. For larger behavior changes, explain why the change belongs here instead of Lauren's original project.
 
 Read [UPSTREAM.md](UPSTREAM.md) before changing content brought over from Lauren's pstack. Pull requests must keep one omp-first skill tree and pass the repository's tests, type checks, plugin validation, and static checks.
 
