@@ -1,7 +1,7 @@
 {
   "name": "pstack",
   "displayName": "pstack",
-  "version": "2.1.1",
+  "version": "2.1.2",
   "description": "if you want to go fast, go deep first. pstack helps you write less, but higher quality code. rigorous agent workflows you can parallelize with confidence. omp-only distribution tracking Cursor's upstream pstack.",
   "author": {
     "name": "Lauren Tan"
