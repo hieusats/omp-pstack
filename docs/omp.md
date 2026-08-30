@@ -38,3 +38,13 @@ task:
 ```
 
 `task.agentModelOverrides` is omp's first-priority model source for a task agent, so no agent file is forked and nothing else in the config is touched. Changes apply to new omp sessions. Codex and Grok lanes keep the upstream `pstack-runner` contract when those CLIs are installed and authenticated.
+
+## Status line
+
+The plugin ships a small runtime extension that draws one status line per omp session, keyed `pstack`. At session start it reads `task.agentModelOverrides` from `~/.omp/agent/config.yml` and reports the lane sheet as it finds it:
+
+- no sheet rows (a fresh machine): `pstack: unconfigured - run /skill:setup-pstack`
+- all seven lanes mapped: `pstack: configured - 7 lanes: <selector>, ...` — the distinct selectors in lane order, at most three shown, then `+N more`
+- unknown `pstack-*` keys, invalid selectors, or missing lanes: `pstack: inconsistent - <problem>, ...` — at most two fragments shown, then `(+N more)`; an unreadable config file reports a `config unreadable: <reason>` fragment the same way
+
+The line renders when omp's `statusLine.showHookStatus` is on (the schema default; opt out by setting it to `false` in `~/.omp/agent/config.yml`). It is drawn once per session start — no polling, no timers — and a failed draw never interrupts the session.
