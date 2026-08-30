@@ -329,6 +329,16 @@ Upstream pstack jumped from `0.1.0` → `0.9.2` between syncs. 30+ commits, incl
 - **`poteto-agent` subagent ID.** Plugin ships this agent; references stay.
 - **Cursor's `/create-skill` writing style guidance referenced indirectly.** Pointed at `plugin-dev:skill-development` which covers the same ground in Claude Code. If you want stricter parity, also install Anthropic's `superpowers:writing-skills` skill.
 
+## Process gates from a session audit
+
+An audit of a real overnight omp session (an Android mesh-chat app built end to end under the playbook) surfaced four recurring process failures. Each fix moves a gate from the SKILL.md trigger list the session skipped into the playbook step lists it demonstrably followed.
+
+- **Commit-time gates in step lists.** `feature`, `bug-fix`, `refactoring`, `hillclimb`, and `autonomous-run` now carry "Run `/deslop` before each commit and `/no-comments` before review" inside their commit steps (`multi-phase-plan` already had it). The gates previously lived only in `opening-a-pr.md`, which local-commit runs never invoke.
+- **Autonomous-run todolist honesty.** The checkpoint step requires the todolist to start with the Principles-read item, phases marked done as they land, and a rebuild from `git log` plus the decision trail after a compaction.
+- **Edit-tool rule.** SKILL.md non-negotiables ban `sed -i`, `perl -i`, and ad-hoc script rewrites on tracked source; edits go through the file-edit tool or `ast_edit`.
+- **Dispatch contract.** SKILL.md Subagents pins the delegation fields: every `tasks[]` item carries `# Target`, `# Change`, and `# Acceptance`; the batch `context` carries `# Goal`, `# Constraints`, and `# Contract`.
+- **Regression tests.** `scripts/check-playbooks.test.ts` locks all of the above and checks playbook cross-references resolve; registered in the CI test run.
+
 ## Forking note
 
 This port now diverges from upstream pstack content. To track upstream:

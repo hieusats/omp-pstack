@@ -26,6 +26,7 @@ Remaining triggers:
 - Docs, RFCs, readmes, PR descriptions, or commit messages → the **technical-writing** skill (`/technical-writing`).
 - Before commit → the **deslop** skill (`/deslop`).
 - Before review → the **no-comments** skill (`/no-comments`).
+- Source edits go through the file-edit tool or `ast_edit`; never `sed -i`, `perl -i`, or ad-hoc script rewrites on tracked source.
 - Shipping UI / IDE / CLI → the driver skill (`run` for CLIs/TUIs, `verify` for UIs). Both ship as Claude Code built-ins. For bug fixes, reproduce first on the same surface yourself; hand to the user only under the narrow Bug fix step 1 exception.
 - Any PR-status request → the **Babysit** playbook (`playbooks/babysit.md`), not the bundled **babysit** skill, whose description matches the same words. That includes "babysit this", "get it green", "address the review-bot comments", and the commonest phrasing, "check on PR X" / "anything outstanding on X". Never triggered by merely opening a PR. Declare its mode before polling; the playbook's step 1 owns the request-to-mode mapping. Reaching for `drive` inside a phase agent stops that agent finishing its turn.
 - Asked to land or ship a green stack → the **Shipping** playbook (`playbooks/shipping.md`). Green is not safe. Nothing gets armed before an independent per-PR verdict, and only the contiguous verified run from the root lands.
@@ -88,6 +89,8 @@ Read the leaf skill in full for any principle you apply. Each entry names when i
 For `inherit-parent`, `auto`, or an unconfigured native ad-hoc helper, prefer `poteto-agent`. `/poteto-mode` and `poteto-agent` route through the same wrapper. A provider-qualified role instead follows provider dispatch: Claude's shipped frontier agent definitions pin native model and effort, Codex passes both to `spawn_agent`, and external providers run through the deterministic launcher. Routed workflow skills set the task and access mode; do not override their choices.
 
 **Defaults for every delegation.** Start independent lanes together, use file pointers rather than inlined dumps, preserve only the tools or MCPs the task needs, and assign every writer a worktree or unique output directory. `/setup-pstack` configures the descriptor per role. Upstream defaults use Grok 4.6 xhigh for feature/refactoring, exploration, and swarm work; GPT-5.6 Sol max for bug fixes, performance work, hillclimbing, and tooling review; Fable 5 max for judgment, prose, explanation, synthesis, and hardest tasks; and the four-provider frontier panel for model-diverse judgment. The panel defaults are enumerated in `arena`, `architect`, `interrogate`, and `how`. `inherit-parent` and `auto` use the parent model natively and reduce provider diversity when used in a panel.
+
+**Dispatch contract.** Every `tasks[]` item carries `# Target`, `# Change`, and `# Acceptance`; the batch `context` carries `# Goal`, `# Constraints`, and `# Contract`.
 
 You own every subagent's work. Review the diff and write your own summary, don't pass through what it said. Interrupt-chained resumes silently drop directives, so fire a fresh subagent with consolidated scope rather than trusting a "done" summary. A second opinion is the same prompt against a different model. Agreement is high-signal.
 
