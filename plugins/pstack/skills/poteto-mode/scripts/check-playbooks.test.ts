@@ -127,6 +127,13 @@ describe("loop round one delegation bounds", () => {
   });
 });
 
+describe("loop round two universal checkpoint", () => {
+  it("requires the checkpoint line below the floor too", () => {
+    const skill = readFileSync(join(import.meta.dir, "..", "SKILL.md"), "utf8");
+    expect(skill).toContain("Below the floor the reply still carries one line");
+  });
+});
+
 describe("eval blinding survives an upstream sync", () => {
   it("keeps the omp non-isolation warning", () => {
     const text = playbook("eval");
