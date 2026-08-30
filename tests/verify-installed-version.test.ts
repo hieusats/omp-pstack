@@ -1,5 +1,6 @@
 import { describe, expect, it } from "bun:test";
 import {
+  activeInstall,
   compareVersions,
   newestCacheVersion,
   servedVersion,
@@ -31,6 +32,33 @@ describe("installed-version verify", () => {
     expect(servedVersion(pstackList(["1.2.0"]))).toBe("1.2.0");
     expect(servedVersion(JSON.stringify({ marketplace: [] }))).toBe(null);
     expect(servedVersion("not json")).toBe(null);
+  });
+
+  it("resolves the active install source for cache and linked installs", () => {
+    expect(activeInstall(pstackList(["2.1.2"]))).toEqual({
+      version: "2.1.2",
+      installPath: "/x/omp-pstack___pstack___2.1.2",
+      linked: false,
+    });
+    const linked = JSON.stringify({
+      marketplace: [
+        {
+          id: "pstack@omp-pstack",
+          scope: "user",
+          entries: [
+            { version: "2.1.1", installPath: "/home/u/.omp/plugins/cache/plugins/omp-pstack___pstack___2.1.1" },
+            { version: "2.1.2", installPath: "/home/u/dev/pstack-omp-five-findings" },
+          ],
+        },
+      ],
+    });
+    expect(activeInstall(linked)).toEqual({
+      version: "2.1.2",
+      installPath: "/home/u/dev/pstack-omp-five-findings",
+      linked: true,
+    });
+    expect(activeInstall(JSON.stringify({ marketplace: [] }))).toBe(null);
+    expect(activeInstall("not json")).toBe(null);
   });
 
   it("picks the numerically newest marketplace cache directory", () => {
