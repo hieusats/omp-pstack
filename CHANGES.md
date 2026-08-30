@@ -422,6 +422,13 @@ A second seven-scenario battery ran against the candidate. The delegation bounds
 - **Universal checkpoint.** The throughput checkpoint trigger now covers below-floor replies: one line, `throughput checkpoint: n/a, <kind>`. The checkpoint is how an audit knows poteto-mode ran at all.
 - **Regression tests.** `scripts/check-playbooks.test.ts` pins the clause red-first.
 
+### Verifier round two (inventory depth, issue #14)
+
+The PR 16 retry verifier ran the delegation scenario twice against the candidate: one run finished in 310s with every gate green, the other followed both new clauses, a depth-bounded dispatch and short hub re-checks, yet still hit the 420s wall because its dispatch told the scout to read each of the twelve test files and the scout spent five and a half minutes on bodies. The depth bound named the principle without naming the unit of work.
+
+- **Inventory depth unit.** The delegation defaults now say an inventory works from names and structure, not file bodies: describe and it labels, exports, headings, directory shape; a body opens only as the range that answers a specific doubt. The scripts suite is 182 tests.
+- **Regression tests.** `scripts/check-playbooks.test.ts` pins both sentences red-first.
+
 ## Forking note
 
 This port now diverges from upstream pstack content. To track upstream:
