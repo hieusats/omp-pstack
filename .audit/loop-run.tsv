@@ -1,0 +1,8 @@
+round	session	gate	verdict	evidence
+1	s1-investigation	all	gates-green	below-floor form, how+why skipped markers verbatim
+1	s2-bugfix-repro	all	gates-green	todolist principles-first, marks as landed, bun run verified
+1	s3-feature-shape	all	gates-clean	below-floor form, n/a checkpoint + how skipped
+1	s4-prototype-fork	all	gates-clean	todolist + /tmp probe + 3 principles w/ decisions
+1	b1-refactor-plan	all	gates-clean	todolist principles-first, marks, checkpoint, how skipped
+1	b2-scout-inventory	gates-followed	deadline-missed	scout 808KB/5.5min for inventory; hub wait 600000 vs 480s cap; no final reply
+1	b3-docs-draft	all	gates-clean	explicit no-principle refusal, technical-writing routed

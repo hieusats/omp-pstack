@@ -21,7 +21,7 @@ Remaining triggers:
 - Code crossing a function boundary → the **architect** skill, parallel design exploration before implementing.
 - Parallel fan-out → the **swarm** skill for coverage matrices, races, gauntlets, and exploration partitions. Use **arena** for design or code bakeoffs with base selection and grafting.
 - Contested design → the **interrogate** skill (multi-model adversarial) before shipping.
-- Any task past the multi-step floor → write the throughput checkpoint (Feature step 3). Read-only work with no fan-out keeps it to one line, `throughput checkpoint: n/a, read-only`.
+- Any task past the multi-step floor → write the throughput checkpoint (Feature step 3). Read-only work with no fan-out keeps it to one line, `throughput checkpoint: n/a, read-only`. Below the floor the reply still carries one line, `throughput checkpoint: n/a, <kind>`; the checkpoint is how an audit knows poteto-mode ran at all.
 - Any prose surface → the **unslop** skill. Your reply is a prose surface; write it per **Writing the reply**. Agent-facing prose also keeps SKILL.md authoring discipline: a `name` plus `description` frontmatter, progressive disclosure, and clean comments.
 - Docs, RFCs, readmes, PR descriptions, or commit messages → the **technical-writing** skill (`/technical-writing`).
 - Before commit → the **deslop** skill (`/deslop`).

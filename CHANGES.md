@@ -415,6 +415,13 @@ A seven-scenario battery of real `omp -p` sessions ran against the candidate bui
 - **Wait sizing.** A `hub wait` timeout is sized to the work still owed after the result, with a short wait plus a `hub jobs` re-check preferred over one long blind block.
 - **Regression tests.** `scripts/check-playbooks.test.ts` pins both clauses red-first.
 
+### Loop round two (universal checkpoint line, issue #14)
+
+A second seven-scenario battery ran against the candidate. The delegation bounds held: the scout inventory finished inside the session budget with a 324KB scout transcript against round one's 808KB, and every gate stayed green. Six of seven sessions cleared everything; the docs session silently dropped the one-line checkpoint that the other below-floor sessions emitted unprompted, because the trigger's phrasing left it optional below the floor.
+
+- **Universal checkpoint.** The throughput checkpoint trigger now covers below-floor replies: one line, `throughput checkpoint: n/a, <kind>`. The checkpoint is how an audit knows poteto-mode ran at all.
+- **Regression tests.** `scripts/check-playbooks.test.ts` pins the clause red-first.
+
 ## Forking note
 
 This port now diverges from upstream pstack content. To track upstream:
