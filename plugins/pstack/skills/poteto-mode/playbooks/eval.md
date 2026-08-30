@@ -13,6 +13,7 @@ Evals test how a change affects agent behavior before promoting it: a new skill 
 - Don't tell the candidate other candidates exist.
 - The judge can know it's judging but sees outputs by sanitized label only, never by model name.
 - Comparing two variants: one judge scores both sets in a single pass on one scale, blind to which set each came from. Two judge runs with different prompts don't compare, the calibration drifts.
+- On omp, no probe is born isolated. A subagent inherits the global agent mandate from `~/.omp/agent/AGENTS.md` and can go read the installed skill tree, and a oneshot completion call still sees the parent session's context. A candidate that must stay blind gets a fresh subagent whose only workflow input is the variant file, then verify from its transcript which files it actually opened. When a signal word could have arrived from outside the variant, report the run as non-isolated instead of publishing its cells.
 
 **Steps:**
 
