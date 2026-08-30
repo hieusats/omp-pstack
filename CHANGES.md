@@ -380,6 +380,16 @@ An audit of a real overnight omp session (an Android mesh-chat app built end to 
 - **Regression tests.** `scripts/check-playbooks.test.ts` locks all of the above and checks playbook cross-references resolve; registered in the CI test run.
 - **Eval blinding on omp.** A follow-up A/B of the `autonomous-run` wording could not be measured: a oneshot completion call still saw the parent session's context, and a fresh subagent inherited the global agent mandate from `~/.omp/agent/AGENTS.md` and emitted gate vocabulary that exists nowhere in its assigned variant file. `eval.md` now carries an omp non-isolation rule, locked by the same test suite.
 
+### Second audit gates (UI-refresh session, issue #12)
+
+A second audit, of the 2026-08-30 UI-refresh session running the 2.1.2 install, surfaced three residual failures the first gates did not cover. Each fix stays in the step lists and non-negotiables a session demonstrably reads.
+
+- **Visible `how` skips.** `feature` step 1 now carries the same inline skip contract `architect` has (`how skipped: <reason>`). The audited session dropped the subsystem mapping silently because only step 2 had a skip clause.
+- **Edit anchors.** The edit-tool non-negotiable now pins anchoring every edit on the content-hash tag from the latest `read`/`write` response, re-reading when the view predates the latest change, and that `:raw` is a `read` selector never an edit header. The audited session corrupted files eleven times and repeated the `#raw` header rejection on three different string resources.
+- **Todolist close.** The todolist non-negotiable requires marking items done as they land and bans re-initializing the list to summarize completed work. The audited session closed with a fresh `init` of seven pending items and spent an extra turn on the reminder.
+
+Zero dispatch and the missing commit gates from the same audit were already closed by the first gate set; bash `find`/`grep` in place of the `glob`/`grep` tools is omp harness policy, out of this repo's scope.
+
 ## Forking note
 
 This port now diverges from upstream pstack content. To track upstream:

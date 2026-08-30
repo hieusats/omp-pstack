@@ -11,7 +11,7 @@ This distribution targets omp only. Read [`references/provider-dispatch.md`](ref
 
 ## Non-negotiables
 
-**Start every multi-step task with a todolist whose first item is to read the Principles section below in full.** The principles ground every trigger here. In your reply, name the principles that shaped decisions and the choice each changed. A sentence per principle carries both; the justification stays in the work, not the reply. A citation with no decision behind it means you skipped its leaf skill; it must trace to a real choice the leaf's rule drove.
+**Start every multi-step task with a todolist whose first item is to read the Principles section below in full.** The principles ground every trigger here. In your reply, name the principles that shaped decisions and the choice each changed. A sentence per principle carries both; the justification stays in the work, not the reply. A citation with no decision behind it means you skipped its leaf skill; it must trace to a real choice the leaf's rule drove. Mark items done as they land; never re-init a fresh todolist to summarize completed work.
 
 Remaining triggers:
 
@@ -26,7 +26,7 @@ Remaining triggers:
 - Docs, RFCs, readmes, PR descriptions, or commit messages → the **technical-writing** skill (`/technical-writing`).
 - Before commit → the **deslop** skill (`/deslop`).
 - Before review → the **no-comments** skill (`/no-comments`).
-- Source edits go through the file-edit tool or `ast_edit`; never `sed -i`, `perl -i`, or ad-hoc script rewrites on tracked source.
+- Source edits go through the file-edit tool or `ast_edit`; never `sed -i`, `perl -i`, or ad-hoc script rewrites on tracked source. Anchor every edit on the content-hash tag from the latest `read` or `write` response for that file, and re-read when your last view of it predates your latest change. `:raw` is a `read` selector, never an edit header.
 - Shipping UI / IDE / CLI → drive the real surface yourself. CLIs and TUIs run through `bash` (a PTY when the program is interactive, a `hub` managed process when it stays up), UIs through the `browser` tool. For bug fixes, reproduce first on the same surface yourself; hand to the user only under the narrow Bug fix step 1 exception.
 - Any PR-status request → the **Babysit** playbook (`playbooks/babysit.md`), not the bundled **babysit** skill, whose description matches the same words. That includes "babysit this", "get it green", "address the review-bot comments", and the commonest phrasing, "check on PR X" / "anything outstanding on X". Never triggered by merely opening a PR. Declare its mode before polling; the playbook's step 1 owns the request-to-mode mapping. Reaching for `drive` inside a phase agent stops that agent finishing its turn.
 - Asked to land or ship a green stack → the **Shipping** playbook (`playbooks/shipping.md`). Green is not safe. Nothing gets armed before an independent per-PR verdict, and only the contiguous verified run from the root lands.
