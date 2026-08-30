@@ -1,6 +1,10 @@
 # CHANGES — applied substitutions
 
-This record covers the whole port history. It began as Cursor → Claude Code substitutions, added a Codex build, then a 1.3.0 omp target, and from 2.0.0 omp is the only target. Sections below their release describe the tree as it was at that release; the 2.1.0 section describes the current tree.
+This record covers the whole port history. It began as Cursor → Claude Code substitutions, added a Codex build, then a 1.3.0 omp target, and from 2.0.0 omp is the only target. Sections below their release describe the tree as it was at that release; the 2.1.1 section describes the current tree.
+
+## 2.1.1 tracks the omp harness as a second upstream
+
+UPSTREAM.md gains an omp upstream section recording can1357/oh-my-pi at release 18.0.11, commit `51f0380`, with the bundled task-agent roster snapshotted at `tests/fixtures/omp-bundled-agents.json`. A new `tests/check-omp-upstream.test.ts` pins the tracking structurally, covering fixture shape, every wrapped lane role appearing in the roster, the UPSTREAM table coupled to the fixture values, and the CHANGES mention; wherever the `omp` CLI is installed it also compares the live `omp agents unpack` roster against the snapshot, so an omp release that moves roles or the agent frontmatter schema fails loudly instead of surfacing as broken lane dispatch. `UPDATE_ROSTER=1` refreshes the snapshot deliberately, and the commit row moves by hand with it. The plugin tree is byte-identical to 2.1.0 apart from the manifest version, which bumps so installed catalogs refresh.
 
 ## 2.1.0 keys the native lanes by omp's bundled roles
 
