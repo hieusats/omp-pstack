@@ -113,6 +113,37 @@ describe("verifier round reply contract", () => {
   });
 });
 
+describe("loop round one delegation bounds", () => {
+  const skill = readFileSync(join(import.meta.dir, "..", "SKILL.md"), "utf8");
+
+  it("bounds delegated depth in the dispatch defaults", () => {
+    expect(skill).toContain("Depth is part of the contract");
+  });
+
+  it("sizes hub waits to remaining work instead of blocking blind", () => {
+    expect(skill).toContain(
+      "Size a `hub wait` timeout to the work you still owe after the result",
+    );
+  });
+});
+
+describe("loop round two universal checkpoint", () => {
+  it("requires the checkpoint line below the floor too", () => {
+    const skill = readFileSync(join(import.meta.dir, "..", "SKILL.md"), "utf8");
+    expect(skill).toContain("Below the floor the reply still carries one line");
+  });
+});
+
+describe("verifier round inventory depth", () => {
+  it("grounds inventories in labels and structure, not file bodies", () => {
+    const skill = readFileSync(join(import.meta.dir, "..", "SKILL.md"), "utf8");
+    expect(skill).toContain(
+      "An inventory works from names and structure, not file bodies",
+    );
+    expect(skill).toContain("open the range that answers, not the whole file");
+  });
+});
+
 describe("eval blinding survives an upstream sync", () => {
   it("keeps the omp non-isolation warning", () => {
     const text = playbook("eval");

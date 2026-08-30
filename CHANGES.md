@@ -407,6 +407,28 @@ An independent verifier passed every local gate, the pin review, and the install
 - **Reply-contract checkpoint.** "Writing the reply" now ends its bullet list with the rule: every reply ends with the throughput checkpoint line, one-line n/a form for read-only and below-floor work, and skip markers ride the same rule. A reply without it is not done.
 - **Regression tests.** `scripts/check-playbooks.test.ts` pins the clause red-first.
 
+### Loop round one (deadline-bound delegation, issue #14)
+
+A seven-scenario battery of real `omp -p` sessions ran against the candidate build. Six scenarios cleared every gate, including honest empty-citation refusals and below-floor one-line checkpoints. The seventh followed every gate yet died on its own deadline: its scout read an 800KB corpus for an inventory assignment and the main session set a ten-minute blind `hub wait` against an eight-minute session budget, so no final reply existed to audit.
+
+- **Delegation depth bound.** The delegation defaults now make depth part of the contract: an inventory or summary assignment says what depth it needs and forbids full-corpus reads the answer does not require.
+- **Wait sizing.** A `hub wait` timeout is sized to the work still owed after the result, with a short wait plus a `hub jobs` re-check preferred over one long blind block.
+- **Regression tests.** `scripts/check-playbooks.test.ts` pins both clauses red-first.
+
+### Loop round two (universal checkpoint line, issue #14)
+
+A second seven-scenario battery ran against the candidate. The delegation bounds held: the scout inventory finished inside the session budget with a 324KB scout transcript against round one's 808KB, and every gate stayed green. Six of seven sessions cleared everything; the docs session silently dropped the one-line checkpoint that the other below-floor sessions emitted unprompted, because the trigger's phrasing left it optional below the floor.
+
+- **Universal checkpoint.** The throughput checkpoint trigger now covers below-floor replies: one line, `throughput checkpoint: n/a, <kind>`. The checkpoint is how an audit knows poteto-mode ran at all.
+- **Regression tests.** `scripts/check-playbooks.test.ts` pins the clause red-first.
+
+### Verifier round two (inventory depth, issue #14)
+
+The PR 16 retry verifier ran the delegation scenario twice against the candidate: one run finished in 310s with every gate green, the other followed both new clauses, a depth-bounded dispatch and short hub re-checks, yet still hit the 420s wall because its dispatch told the scout to read each of the twelve test files and the scout spent five and a half minutes on bodies. The depth bound named the principle without naming the unit of work.
+
+- **Inventory depth unit.** The delegation defaults now say an inventory works from names and structure, not file bodies: describe and it labels, exports, headings, directory shape; a body opens only as the range that answers a specific doubt. The scripts suite is 182 tests.
+- **Regression tests.** `scripts/check-playbooks.test.ts` pins both sentences red-first.
+
 ## Forking note
 
 This port now diverges from upstream pstack content. To track upstream:
