@@ -4,13 +4,13 @@
 [![Latest release](https://img.shields.io/github/v/release/hieusats/omp-pstack)](https://github.com/hieusats/omp-pstack/releases/latest)
 [![MIT license](https://img.shields.io/github/license/hieusats/omp-pstack)](LICENSE)
 
-**omp-pstack brings [Lauren Tan (@poteto)](https://x.com/poteto)'s [pstack](https://github.com/cursor/plugins/tree/main/pstack) to omp (Oh My Pi).** Its job is to stay as close to her original work as possible while translating the parts that depend on Cursor. Since 2.0.0 this is an omp-only distribution; the Claude Code and Codex targets are gone.
+**omp-pstack brings [Lauren Tan (@poteto)](https://x.com/poteto)'s [pstack](https://github.com/cursor/plugins/tree/main/pstack) to omp (Oh My Pi).** It stays close to her original work and translates only the parts that depend on Cursor. Since 2.0.0 this is an omp-only distribution. The Claude Code and Codex targets are gone.
 
 Lauren built pstack from the skills she uses to ship code at Cursor. In a [55-minute interview with Denis Labelle](https://x.com/DenisLabelle/status/2091337807939706928), she says that she shipped 1,000 pull requests in one month after steadily improving how her agents work and verify their results.
 
 > If you want to go fast, go deep first.
 
-omp-pstack is an unofficial community project that makes pstack work in omp. If Cursor is your main coding environment, use [Lauren's original pstack](https://github.com/cursor/plugins/tree/main/pstack). If omp is your main coding environment, use this repository.
+omp-pstack is an unofficial community project. If Cursor is your main coding environment, use [Lauren's original pstack](https://github.com/cursor/plugins/tree/main/pstack). If omp is your main coding environment, use this repository.
 
 ## What pstack does
 
@@ -18,15 +18,44 @@ pstack is a plugin for coding agents. It is not a new model or a hosted service.
 
 The normal entry point is `poteto-mode`. You give it a task in plain language. It then:
 
-- reads the task and chooses a workflow that fits;
-- learns how the current system works before changing it;
-- compares designs when the choice matters;
-- favors small, simple changes over extra machinery;
-- asks several models to challenge important decisions when useful;
-- runs the code and checks real behavior instead of stopping at “the tests pass”; and
-- carries the work through review, continuous integration (CI), and a ready-to-merge pull request when asked.
+- reads the task and chooses a workflow that fits
+- learns how the current system works before changing it
+- compares designs when the choice matters
+- favors small, simple changes over extra machinery
+- asks several models to challenge important decisions when useful
+- runs the code and checks real behavior instead of stopping at "the tests pass"
+- carries the work through review, continuous integration (CI), and a ready-to-merge pull request when asked
 
-![How pstack routes a task through focused skills, real-app proof, and a review-ready pull request](assets/pstack-workflow.png)
+How pstack routes a task from plain language to a review-ready pull request:
+
+```text
+                   +-----------+
+                   | YOUR TASK |
+                   +-----------+
+                         |
+                         v
+                  +-------------+
+                  | POTETO-MODE |  <-- chooses the playbook
+                  +-------------+
+                         |
+   +------------+--------+---+-------------+
+   v            v            v             v
++-----+   +-----------+   +-----+   +-------------+
+| HOW |   | ARCHITECT |   | TDD |   | INTERROGATE |
++-----+   +-----------+   +-----+   +-------------+
+   |            |            |             |
+   +------------+--------+---+-------------+
+                         |
+                         v
+                 +----------------+
+                 | REAL-APP PROOF |  <-- runs the product
+                 +----------------+
+                         |
+                         v
+                +-----------------+
+                | REVIEW-READY PR |
+                +-----------------+
+```
 
 pstack does not ask you to trust an agent on day one. It helps the agent leave evidence you can inspect. Start with supervised work. Let it run more work in parallel only after its checks have earned that trust in your own repositories.
 
@@ -39,7 +68,7 @@ omp plugin marketplace add hieusats/omp-pstack
 omp plugin install pstack@omp-pstack
 ```
 
-omp discovers the skills under flat names (`/skill:architect`, `skill://poteto-mode`) and the nine agents natively. The startup mandate ships as an always-apply rule (`rules/pstack-session-mandate.md`) that omp injects into every session automatically; see [docs/omp.md](docs/omp.md). Then run setup-pstack to map the model lanes in `~/.omp/agent/config.yml`.
+omp discovers the skills under flat names (`/skill:architect`, `skill://poteto-mode`) and the nine agents natively. The startup mandate ships as an always-apply rule (`rules/pstack-session-mandate.md`) that omp injects into every session automatically. See [docs/omp.md](docs/omp.md). Then run setup-pstack to map the model lanes in `~/.omp/agent/config.yml`.
 
 ## Get started
 
@@ -91,26 +120,26 @@ Some pstack workflows use one model. Skills such as `architect`, `arena`, and `i
 
 Grok takes part in a multi-model review as an external lane.
 
-## Learn from the original
+## Learn more
 
 Lauren's [pstack guide](https://github.com/cursor/plugins/tree/main/pstack/docs/guide) walks through a real task, verification, and longer unattended runs. It uses Cursor's interface, but the ideas are the same. Use the translated skill invocations above in omp.
 
 This repository also keeps:
 
-- [the original README](README-UPSTREAM.md), unchanged;
-- [the technical reference](docs/reference.md) for every skill, dependency, and omp detail;
-- [the omp-specific doc](docs/omp.md) for install, the session mandate, and model lanes;
-- [the upstream sync record](UPSTREAM.md) and update process;
-- [the change record](CHANGES.md) for every adaptation; and
-- [the attribution record](NOTICE.md) for pstack and the imported Cursor Team Kit skills.
+- [the original README](README-UPSTREAM.md), unchanged
+- [the technical reference](docs/reference.md) for every skill, dependency, and omp detail
+- [the omp-specific doc](docs/omp.md) for install, the session mandate, and model lanes
+- [the upstream sync record](UPSTREAM.md) and update process
+- [the change record](CHANGES.md) for every adaptation
+- [the attribution record](NOTICE.md) for pstack and the imported Cursor Team Kit skills
 
 ## Staying close to Lauren's pstack
 
-omp-pstack 2.0.0 tracks pstack 0.14.5 at Cursor commit [`6fecddba65801f9b9c08b8b328d998ee5b09d290`](https://github.com/cursor/plugins/commit/6fecddba65801f9b9c08b8b328d998ee5b09d290).
+omp-pstack 2.1.2 tracks pstack 0.14.5 at Cursor commit [`6fecddba65801f9b9c08b8b328d998ee5b09d290`](https://github.com/cursor/plugins/commit/6fecddba65801f9b9c08b8b328d998ee5b09d290).
 
 The two projects have separate version numbers. The pstack version identifies Lauren's upstream content. The omp-pstack version identifies the omp package built from it.
 
-In this repository, “upstream” means Lauren's original pstack. omp-pstack does not promise instant updates. It records the exact version it follows, reviews new changes in order, and changes only what omp requires. New pstack behavior belongs in Lauren's project first whenever possible.
+In this repository, "upstream" means Lauren's original pstack. omp-pstack does not promise instant updates. It records the exact version it follows, reviews new changes in order, and changes only what omp requires. New pstack behavior belongs in Lauren's project first whenever possible.
 
 ## Contributing
 
