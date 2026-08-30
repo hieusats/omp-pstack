@@ -6,7 +6,7 @@ pstack model choices are provider-qualified descriptors:
 <provider>:<model>@<effort>
 ```
 
-## Model matrix
+## Provider panel
 
 | Family | Upstream pstack choice | Provider | Model | Default effort | Selectable efforts |
 |---|---|---|---|---|---|
@@ -15,7 +15,7 @@ pstack model choices are provider-qualified descriptors:
 | grok | grok-4.6-fast-xhigh | grok | grok-4.6 | xhigh | low medium high xhigh max |
 | opus | claude-opus-5-thinking-xhigh | claude | claude-opus-5 | xhigh | low medium high xhigh max |
 
-The allowed effort universe is exactly `low`, `medium`, `high`, `xhigh`, `max`. First-run requested efforts are the Default effort cell of each row. Native lane agents are keyed by omp's bundled roles, not by model family; the shipped lane name is `pstack-<omp-role>`.
+The panel is the first-run default group, not the legality domain of a lane selector. The allowed effort universe is exactly `low`, `medium`, `high`, `xhigh`, `max`. First-run requested efforts are the Default effort cell of each row. A native lane selector is legal when `omp models` lists its provider and model; its selectable efforts are the thinking levels the registry lists for that model, and the panel's Selectable efforts cells govern only the panel families. Native lane agents are keyed by omp's bundled roles, not by model family; the shipped lane name is `pstack-<omp-role>`.
 
 `fast` is part of Cursor's Grok selector, not a Grok Build CLI model or effort flag. The portable Grok route pins the current CLI model `grok-4.6`. The first-run Grok effort is `xhigh`.
 
@@ -23,9 +23,9 @@ The allowed effort universe is exactly `low`, `medium`, `high`, `xhigh`, `max`. 
 
 omp is the only parent in this distribution. It resolves the route once. A child receives an assigned provider, model, effort, access mode, prompt, working directory, and output path. A child never detects the harness, chooses a provider, or launches another model. Environment markers may corroborate the top-level harness before fan-out, but nested processes inherit parent markers and must not use them for routing.
 
-| Parent | `claude:*` | `codex:*` | `grok:*` |
-|---|---|---|---|
-| omp | native `task` lane | external runner | external runner |
+| Parent | registry selector | codex or Grok CLI lane |
+|---|---|---|
+| omp | native `task` lane | external runner |
 
 `inherit-parent` and `auto` remain aliases. They use the parent's current model and effort through its native subagent primitive. In a panel they still consume one lane, but they reduce provider diversity; say so in the synthesis record.
 
