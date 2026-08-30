@@ -1,6 +1,10 @@
 # CHANGES — applied substitutions
 
-This record covers the whole port history. It began as Cursor → Claude Code substitutions, added a Codex build, then a 1.3.0 omp target, and from 2.0.0 omp is the only target. Sections below their release describe the tree as it was at that release; the 2.1.1 section describes the current tree.
+This record covers the whole port history. It began as Cursor → Claude Code substitutions, added a Codex build, then a 1.3.0 omp target, and from 2.0.0 omp is the only target. Sections below their release describe the tree as it was at that release; the 2.1.2 section describes the current tree.
+
+## 2.1.2 closes the five recorded findings from the 2026-08-30 sessions
+
+Tracking issue [#7](https://github.com/hieusats/omp-pstack/issues/7). Each lane body now states its `tools` allowlist is a hard boundary and orders the lane to refuse a mutating assignment rather than route it through `hub` process starts, after a hostile dispatch to the read-only `pstack-librarian` lane reproduced the recorded escape: omp granted `hub op:"start"` beyond the `read, grep, glob, web_search` allowlist with no enforcement, and a `/bin/sh -c` payload wrote the probe file. The runner's model-matrix test pins the boundary sentence in the shared lane body, so an upstream sync cannot silently drop it. Hard enforcement remains an omp upstream gap. `AGENTS.md` gains the categorical source-edit rule (edit tool or `ast_edit`, never `sed -i` or ad-hoc patchers on tracked source) because agents violated it twice across the recorded sessions and AGENTS.md loads for every session in this repo. A new `tests/verify-installed-version.ts` turns the release-time install check into a rerunnable script: it compares the repo manifest version against `omp plugin list --json` and the newest marketplace cache directory, failing loudly on the downgrade and stale-cache shapes that surfaced during the 2.1.0 and 2.1.1 releases; `tests/verify-installed-version.test.ts` covers the pure comparison against the incident shapes. The Claude-ism field cleanup from 2.1.0 was re-proven by mutation (re-adding `background` and `disallowedTools` to a lane fails the roster pin), and the reverted role-alias experiment leaves no residue on main.
 
 ## 2.1.1 tracks the omp harness as a second upstream
 
