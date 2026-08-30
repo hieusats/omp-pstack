@@ -75,6 +75,26 @@ describe("second session audit gates", () => {
   });
 });
 
+describe("third session audit gates", () => {
+  const skill = readFileSync(join(import.meta.dir, "..", "SKILL.md"), "utf8");
+
+  it("defines the multi-step floor for the todolist rule", () => {
+    expect(skill).toContain(
+      "the moment it dispatches a subagent, runs a command to verify its own work, or edits any file",
+    );
+  });
+
+  it("anchors the throughput checkpoint to the floor", () => {
+    expect(skill).toContain(
+      "Any task past the multi-step floor → write the throughput checkpoint",
+    );
+  });
+
+  it("investigation step 1 makes a skipped how visible", () => {
+    expect(playbook("investigation")).toContain("how skipped: <reason>");
+  });
+});
+
 describe("eval blinding survives an upstream sync", () => {
   it("keeps the omp non-isolation warning", () => {
     const text = playbook("eval");
