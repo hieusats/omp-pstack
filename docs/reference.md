@@ -24,6 +24,17 @@ This repo ships as a Claude Code marketplace containing one plugin (`pstack`).
 
 The plugin auto-fires through a `SessionStart` hook on startup, `/clear`, and post-compact. The hook injects a small mandate that routes non-trivial engineering work into `poteto-mode`; the full skill loads only when invoked. Dispatched subagents ignore the mandate, and explicit user instructions take precedence. To opt out, delete `hooks/hooks.json` from the installed copy at `~/.claude/plugins/cache/open-pstack/pstack/<version>/hooks/hooks.json`; a plugin update restores it.
 
+### omp
+
+The same catalog ships at `.omp-plugin/marketplace.json`, omp's preferred path, byte-identical to the Claude Code copy. Install it through the omp marketplace:
+
+```shell
+omp plugin marketplace add hieusats/omp-pstack
+omp plugin install pstack@omp-pstack
+```
+
+omp resolves the skills under flat names (`skill://poteto-mode`, `/skill:architect`) and the `agents/` directory as native task agents. The startup mandate is omp-native too: the always-apply rule `rules/pstack-session-mandate.md` is injected into every session's system prompt automatically, so the Claude Code `hooks.json` mechanism has a full equivalent. See [omp.md](omp.md) for the model-lane setup.
+
 ### Codex
 
 The same plugin carries a `.codex-plugin/plugin.json` manifest and a root `.agents/plugins/marketplace.json`. Install it through the Codex marketplace:
@@ -55,15 +66,17 @@ The marketplace install is the normal user path. Direct links are only for testi
 ```text
 .
 ├── .claude-plugin/marketplace.json   # Claude Code marketplace manifest (repo root)
+├── .omp-plugin/marketplace.json      # omp marketplace manifest, byte-identical to the Claude Code catalog
 ├── .agents/plugins/marketplace.json  # Codex marketplace manifest (repo root)
 ├── plugins/pstack/                   # the plugin itself
 │   ├── .claude-plugin/plugin.json    # Claude Code manifest
 │   ├── .codex-plugin/plugin.json     # Codex manifest (skills: ./skills/)
-│   ├── skills/                       # 52 skills shared by Claude Code and Codex
+│   ├── skills/                       # 52 skills shared by Claude Code, Codex, and omp
 │   │   ├── poteto-mode/references/{codex-tools,provider-dispatch}.md  # tool + provider routing
 │   │   └── poteto-mode/scripts/      # bun/bash/node tooling: watch-pr, orch, runner, check-plan.mjs, worktree-audit.sh
+│   ├── rules/                        # omp always-apply session mandate, auto-injected into every omp session
 │   ├── hooks/                        # SessionStart auto-fire: injects the poteto-mode mandate (Claude Code only)
-│   └── agents/                       # Claude subagents, including native Fable and Opus lanes at each selectable effort
+│   └── agents/                       # subagents: native on Claude Code and omp, including the Fable and Opus lanes at each selectable effort
 ├── tests/skill-collision-repro.sh    # native-skill package invariants and Claude invocation checks
 ├── LICENSE                           # pstack upstream MIT
 ├── LICENSE-cursor-team-kit           # cursor-team-kit upstream MIT

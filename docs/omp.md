@@ -1,6 +1,6 @@
 # omp (Oh My Pi)
 
-omp-pstack targets omp alongside Claude Code and Codex. omp reads this repository's `.claude-plugin/marketplace.json` catalog directly and discovers skills, commands, tools, MCP servers, and the `agents/` directory from the installed plugin tree.
+omp-pstack targets omp alongside Claude Code and Codex. omp reads this repository's `.omp-plugin/marketplace.json` catalog (its preferred path, byte-identical to the `.claude-plugin/marketplace.json` copy Claude Code reads) and discovers skills, commands, tools, MCP servers, and the `agents/` directory from the installed plugin tree.
 
 ## Install
 
@@ -13,25 +13,11 @@ Skills appear under flat names — `/skill:architect`, `/skill:poteto-mode`, `sk
 
 ## Startup mandate
 
-omp does not execute Claude Code `hooks.json`, so the SessionStart hook that injects the poteto-mode dispatch mandate in Claude Code stays silent on omp. Port it once by adding the block below to `~/.omp/agent/AGENTS.md` (create the file if missing):
+omp does not execute Claude Code `hooks.json`, so the SessionStart hook Claude Code uses stays silent on omp. The plugin instead ships the mandate as an omp-native always-apply rule at `plugins/pstack/rules/pstack-session-mandate.md`. omp's plugin rule discovery loads it from the installed plugin and injects its full content into every session's system prompt automatically; no manual setup step exists. The rule mirrors `plugins/pstack/hooks/session-start-context.md` with omp's flat skill names, stays addressable as `rule://pstack-session-mandate`, and like the hook version defers to direct user instructions and lets dispatched subagents ignore it.
 
-```markdown
-# pstack session mandate
+To opt out, delete the `rules/` directory from the installed copy under `~/.omp/plugins/cache/plugins/omp-pstack___pstack_*_<version>/`; a plugin update restores it.
 
-<EXTREMELY_IMPORTANT>
-You have pstack (installed as the omp marketplace plugin pstack@omp-pstack).
-
-Before responding to any non-trivial engineering task — a feature, bug fix, refactor, debugging, performance work, or any multi-step code change — invoke the `poteto-mode` skill (read `skill://poteto-mode`) and follow it. It is the default entry point and routes to the specific pstack skills from there. Pure questions and trivial one-line edits don't need it.
-
-When the intent is already specific, enter directly: `tdd` (bug with a reproducible failure), `architect` (types and module shape before code that crosses a function boundary), `how` (how a subsystem works), `why` (why it was built this way), `arena` (N parallel attempts at one task), `interrogate` (multi-model diff review).
-
-If you were dispatched as a subagent to execute a specific task, ignore this block — poteto-mode governs the orchestrating session, and it already shaped your dispatch.
-
-User instructions (AGENTS.md, direct requests) take precedence over this mandate.
-</EXTREMELY_IMPORTANT>
-```
-
-The block mirrors `plugins/pstack/hooks/session-start-context.md` with omp's flat skill names. Delete it to remove the mandate.
+Versions before 1.3.0 asked you to paste the mandate into `~/.omp/agent/AGENTS.md`. That block is obsolete now; delete it if you still carry it, so the mandate is not injected twice.
 
 ## Model lanes
 
