@@ -2,8 +2,6 @@
 name: pstack-security-reviewer
 description: Native pstack lane wrapping omp's security-reviewer agent for pstack dispatch.
 tools: read, grep, glob
-background: true
-disallowedTools: Agent, Task
 ---
 
 # pstack role lane

@@ -32,7 +32,7 @@ const OMP_ROLE_LANES = [
   { role: "reviewer", model: '"@slow"', tools: "read, grep, glob, bash, lsp" },
   { role: "security-reviewer", model: null, tools: "read, grep, glob" },
   { role: "librarian", model: '"@smol"', tools: "read, grep, glob, web_search" },
-  { role: "task", model: '"@task"', tools: null },
+  { role: "task", model: '"@task"', tools: null, spawns: "[]" },
   { role: "sonic", model: '"@smol"', tools: "read, grep, glob, edit, write" },
 ] as const;
 const DESCRIPTOR_RE =
@@ -234,8 +234,7 @@ describe("model matrix", () => {
         description: `Native pstack lane wrapping omp's ${lane.role} agent for pstack dispatch.`,
         ...(lane.model === null ? {} : { model: lane.model }),
         ...(lane.tools === null ? {} : { tools: lane.tools }),
-        background: "true",
-        disallowedTools: "Agent, Task",
+        ...("spawns" in lane ? { spawns: lane.spawns } : {}),
       });
       if (sharedBody === null) {
         sharedBody = body;

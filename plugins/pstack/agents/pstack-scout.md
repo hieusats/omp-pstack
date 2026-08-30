@@ -3,8 +3,6 @@ name: pstack-scout
 description: Native pstack lane wrapping omp's scout agent for pstack dispatch.
 model: "@smol"
 tools: read, grep, glob
-background: true
-disallowedTools: Agent, Task
 ---
 
 # pstack role lane

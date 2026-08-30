@@ -3,8 +3,6 @@ name: pstack-reviewer
 description: Native pstack lane wrapping omp's reviewer agent for pstack dispatch.
 model: "@slow"
 tools: read, grep, glob, bash, lsp
-background: true
-disallowedTools: Agent, Task
 ---
 
 # pstack role lane

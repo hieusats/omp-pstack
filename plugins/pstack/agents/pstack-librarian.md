@@ -3,8 +3,6 @@ name: pstack-librarian
 description: Native pstack lane wrapping omp's librarian agent for pstack dispatch.
 model: "@smol"
 tools: read, grep, glob, web_search
-background: true
-disallowedTools: Agent, Task
 ---
 
 # pstack role lane

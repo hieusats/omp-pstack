@@ -3,8 +3,6 @@ name: pstack-sonic
 description: Native pstack lane wrapping omp's sonic agent for pstack dispatch.
 model: "@smol"
 tools: read, grep, glob, edit, write
-background: true
-disallowedTools: Agent, Task
 ---
 
 # pstack role lane
