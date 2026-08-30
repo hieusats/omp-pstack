@@ -1,6 +1,10 @@
 # CHANGES — applied substitutions
 
-This record covers the whole port history. It began as Cursor → Claude Code substitutions, added a Codex build, then a 1.3.0 omp target, and from 2.0.0 omp is the only target. Sections below their release describe the tree as it was at that release; the 2.1.7 section describes the current tree.
+This record covers the whole port history. It began as Cursor → Claude Code substitutions, added a Codex build, then a 1.3.0 omp target, and from 2.0.0 omp is the only target. Sections below their release describe the tree as it was at that release; the 2.1.8 section describes the current tree.
+
+## 2.1.8 rides playbook delegation defaults on the omp lanes
+
+Tracking issue [#19](https://github.com/hieusats/omp-pstack/issues/19), closing its third and final class. The single-delegate sites kept the same phantom config: `bug-fix`, `feature`, `perf-issue`, and `hillclimb` said "your configured bug-fix/feature/perf-issue/hillclimb descriptor" with a codex or grok default, `refactoring` the same with a grok default, and poteto-mode's defaults paragraph spelled out the upstream tiering as if omp could configure it. No omp surface holds those values, so on an install without authenticated external CLIs every code delegation dead-ended on the runner. The four code playbooks now delegate on omp's writer lane `pstack-task` and `refactoring` hands its mechanical edits to omp's mechanical lane `pstack-sonic`; poteto-mode's defaults paragraph maps each kind of work to its lane, states that model and effort come from `task.agentModelOverrides`, keeps the external provider-panel descriptor as an explicit cross-provider opt-in, and points at setup-pstack's role map for the upstream family tiering. `check-playbooks.test.ts` pins the five playbooks and the paragraph red-first.
 
 ## 2.1.7 resolves the remaining panel skills from the omp lane sheet
 
