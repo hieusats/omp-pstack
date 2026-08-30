@@ -58,6 +58,14 @@ describe("skill-level dispatch and edit rules", () => {
   });
 });
 
+describe("eval blinding survives an upstream sync", () => {
+  it("keeps the omp non-isolation warning", () => {
+    const text = playbook("eval");
+    expect(text).toContain("no probe is born isolated");
+    expect(text).toContain("report the run as non-isolated");
+  });
+});
+
 describe("playbook cross-references resolve", () => {
   const files = readdirSync(playbooksDir).filter((f) => f.endsWith(".md"));
 

@@ -338,6 +338,7 @@ An audit of a real overnight omp session (an Android mesh-chat app built end to 
 - **Edit-tool rule.** SKILL.md non-negotiables ban `sed -i`, `perl -i`, and ad-hoc script rewrites on tracked source; edits go through the file-edit tool or `ast_edit`.
 - **Dispatch contract.** SKILL.md Subagents pins the delegation fields: every `tasks[]` item carries `# Target`, `# Change`, and `# Acceptance`; the batch `context` carries `# Goal`, `# Constraints`, and `# Contract`.
 - **Regression tests.** `scripts/check-playbooks.test.ts` locks all of the above and checks playbook cross-references resolve; registered in the CI test run.
+- **Eval blinding on omp.** A follow-up A/B of the `autonomous-run` wording could not be measured: a oneshot completion call still saw the parent session's context, and a fresh subagent inherited the global agent mandate from `~/.omp/agent/AGENTS.md` and emitted gate vocabulary that exists nowhere in its assigned variant file. `eval.md` now carries an omp non-isolation rule, locked by the same test suite.
 
 ## Forking note
 
