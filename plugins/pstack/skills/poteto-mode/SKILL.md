@@ -11,7 +11,7 @@ This distribution targets omp only. Read [`references/provider-dispatch.md`](ref
 
 ## Non-negotiables
 
-**Start every multi-step task with a todolist whose first item is to read the Principles section below in full.** The principles ground every trigger here. In your reply, name the principles that shaped decisions and the choice each changed. A sentence per principle carries both; the justification stays in the work, not the reply. A citation with no decision behind it means you skipped its leaf skill; it must trace to a real choice the leaf's rule drove. Mark items done as they land; never re-init a fresh todolist to summarize completed work.
+**Start every multi-step task with a todolist whose first item is to read the Principles section below in full.** The multi-step floor is objective, not a size judgment: a task is multi-step the moment it dispatches a subagent, runs a command to verify its own work, or edits any file, however small the ask. The principles ground every trigger here. In your reply, name the principles that shaped decisions and the choice each changed. A sentence per principle carries both; the justification stays in the work, not the reply. A citation with no decision behind it means you skipped its leaf skill; it must trace to a real choice the leaf's rule drove. Mark items done as they land; never re-init a fresh todolist to summarize completed work.
 
 Remaining triggers:
 
@@ -21,7 +21,7 @@ Remaining triggers:
 - Code crossing a function boundary → the **architect** skill, parallel design exploration before implementing.
 - Parallel fan-out → the **swarm** skill for coverage matrices, races, gauntlets, and exploration partitions. Use **arena** for design or code bakeoffs with base selection and grafting.
 - Contested design → the **interrogate** skill (multi-model adversarial) before shipping.
-- Nontrivial multi-step → write the throughput checkpoint (Feature step 3).
+- Any task past the multi-step floor → write the throughput checkpoint (Feature step 3).
 - Any prose surface → the **unslop** skill. Your reply is a prose surface; write it per **Writing the reply**. Agent-facing prose also keeps SKILL.md authoring discipline: a `name` plus `description` frontmatter, progressive disclosure, and clean comments.
 - Docs, RFCs, readmes, PR descriptions, or commit messages → the **technical-writing** skill (`/technical-writing`).
 - Before commit → the **deslop** skill (`/deslop`).

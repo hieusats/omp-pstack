@@ -390,6 +390,15 @@ A second audit, of the 2026-08-30 UI-refresh session running the 2.1.2 install, 
 
 Zero dispatch and the missing commit gates from the same audit were already closed by the first gate set; bash `find`/`grep` in place of the `glob`/`grep` tools is omp harness policy, out of this repo's scope.
 
+### Third audit gates (three live poteto-mode sessions, issue #14)
+
+A third audit launched three real `omp -p` sessions running poteto-mode 2.1.4 in a fresh worktree from main. All three read the full SKILL.md and then skipped every process gate, because "multi-step" and "nontrivial" carried no floor a small ask could not sink under: the session that dispatched a scout, waited on it, and verified its count still built no todolist and wrote no checkpoint, and the investigation session neither routed through `how` nor marked the skip.
+
+- **Objective multi-step floor.** The todolist non-negotiable now defines the floor: a task is multi-step the moment it dispatches a subagent, runs a command to verify its own work, or edits any file, however small the ask.
+- **Checkpoint anchored to the floor.** The throughput checkpoint trigger reads "Any task past the multi-step floor" instead of "Nontrivial multi-step".
+- **Visible `how` skips in investigations.** `investigation` step 1 carries the same inline skip contract `feature` step 1 gained in 2.1.4 (`how skipped: <reason>`).
+- **Regression tests.** `scripts/check-playbooks.test.ts` pins all three clauses red-first.
+
 ## Forking note
 
 This port now diverges from upstream pstack content. To track upstream:
