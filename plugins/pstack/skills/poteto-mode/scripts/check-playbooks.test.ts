@@ -105,6 +105,14 @@ describe("third session audit gates", () => {
   });
 });
 
+describe("verifier round reply contract", () => {
+  it("makes the checkpoint line part of the reply format", () => {
+    const skill = readFileSync(join(import.meta.dir, "..", "SKILL.md"), "utf8");
+    expect(skill).toContain("Every reply ends with the throughput checkpoint line");
+    expect(skill).toContain("A reply without it is not done");
+  });
+});
+
 describe("eval blinding survives an upstream sync", () => {
   it("keeps the omp non-isolation warning", () => {
     const text = playbook("eval");
