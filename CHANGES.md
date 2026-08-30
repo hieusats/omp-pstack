@@ -397,7 +397,8 @@ A third audit launched three real `omp -p` sessions running poteto-mode 2.1.4 in
 - **Objective multi-step floor.** The todolist non-negotiable now defines the floor: a task is multi-step the moment it dispatches a subagent, runs a command to verify its own work, or edits any file, however small the ask.
 - **Checkpoint anchored to the floor.** The throughput checkpoint trigger reads "Any task past the multi-step floor" instead of "Nontrivial multi-step".
 - **Visible `how` skips in investigations.** `investigation` step 1 carries the same inline skip contract `feature` step 1 gained in 2.1.4 (`how skipped: <reason>`).
-- **Regression tests.** `scripts/check-playbooks.test.ts` pins all three clauses red-first.
+- **Checkpoint one-liner and reply-level how skip.** A live probe against the candidate build still wrote no checkpoint on a floor-clearing read-only task and answered an investigation without `how` or a skip marker while never opening the playbook. The checkpoint trigger now names the one-line `throughput checkpoint: n/a, read-only` form, and the ask-classification trigger requires a direct investigation answer without `how` to carry `how skipped: <reason>` in the reply.
+- **Regression tests.** `scripts/check-playbooks.test.ts` pins every clause above red-first.
 
 ## Forking note
 
