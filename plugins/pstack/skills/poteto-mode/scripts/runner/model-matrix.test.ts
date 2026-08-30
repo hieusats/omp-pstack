@@ -9,6 +9,7 @@ const DISPATCH_PATH = join(
   "skills/poteto-mode/references/provider-dispatch.md"
 );
 const SETUP_PATH = join(PLUGIN_ROOT, "skills/setup-pstack/SKILL.md");
+const DOCS_PATH = join(PLUGIN_ROOT, "../../docs/omp.md");
 const AGENTS_DIR = join(PLUGIN_ROOT, "agents");
 
 const MATRIX_HEADER = [
@@ -330,5 +331,29 @@ describe("model matrix", () => {
       "match the descriptor's `(provider, model)` to one model-matrix row"
     );
     expect(nativeLanes).toContain("`pstack-<stem>-<effort>`");
+  });
+
+  it("keeps the omp alias sheet shape aligned across setup, dispatch, and docs", () => {
+    expect(setup).toContain("pstack_fable: <provider>/<model>:<level>");
+    expect(setup).toContain('pstack-opus-<effort>: "@pstack_opus:<level>"');
+    const dispatch = readFileSync(DISPATCH_PATH, "utf8");
+    const nativeStart = dispatch.indexOf("## Native lanes");
+    const externalStart = dispatch.indexOf("## External lanes");
+    const nativeLanes = dispatch.slice(nativeStart, externalStart);
+    expect(nativeLanes).toContain("`pstack_fable`, `pstack_opus`");
+    expect(nativeLanes).toContain("clamped");
+    const docs = readFileSync(DOCS_PATH, "utf8");
+    const laneRows =
+      docs.match(
+        /^\s{4}pstack-(fable|opus)-(low|medium|high|xhigh|max): "@pstack_(fable|opus):(low|medium|high|xhigh|max)"$/gm
+      ) ?? [];
+    expect(laneRows.length).toBe(10);
+    const roleRows =
+      docs.match(
+        /^\s{2}pstack_(fable|opus): <provider>\/<model>:<clamped effort>$/gm
+      ) ?? [];
+    expect(roleRows.length).toBe(2);
+    expect(docs).toContain('pstack-fable-medium: "@pstack_fable:high"');
+    expect(docs).toContain('pstack-fable-xhigh: "@pstack_fable:max"');
   });
 });

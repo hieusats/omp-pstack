@@ -21,14 +21,19 @@ Codex writes `~/.codex/pstack-models.md`. Codex has no `@` include, so mirror th
 <!-- pstack:models:end -->
 ```
 
-omp (Oh My Pi) has no sheet include and no second file. The live sheet is `task.agentModelOverrides` in `~/.omp/agent/config.yml`, and the ten `pstack-<stem>-<effort>` lane agents are its role surface. Render one row per lane, with the lane's effort as an omp thinking level:
+omp (Oh My Pi) has no sheet include and no second file. The live sheet is two `modelRoles` rows plus ten `task.agentModelOverrides` alias rows in `~/.omp/agent/config.yml`, and the ten `pstack-<stem>-<effort>` lane agents are its role surface. omp expands `@role` values in `agentModelOverrides` through `modelRoles`, so each family's selector lives in exactly one row and changing a panel model edits one line:
 
 ```text
+modelRoles:
+  pstack_fable: <provider>/<model>:<level>
+  pstack_opus: <provider>/<model>:<level>
 task:
   agentModelOverrides:
-    pstack-fable-<effort>: <provider>/<model>:<effort>
-    pstack-opus-<effort>: <provider>/<model>:<effort>
+    pstack-fable-<effort>: "@pstack_fable:<level>"
+    pstack-opus-<effort>: "@pstack_opus:<level>"
 ```
+
+Every lane row carries an explicit `:level`. Each level is that lane's effort component clamped to the thinking levels the selected model actually serves (`omp models` lists them): nearest tier, ties upward, never a level outside the effort universe. The clamped level is what gets written, so the level read from the config is the level that runs. A model that serves none of the effort universe is a failed probe and writes nothing.
 
 ## Steps
 
@@ -38,7 +43,7 @@ Use the harness and tool surface running this skill: Claude Code, Codex, or omp.
 
 ### 2. Load current state
 
-Read the current parent-specific sheet when it exists. Treat its values as current role-to-family assignments. Overlay its rows on the complete first-run role map in step 7. Materialize any missing documented role row from that map on the next successful write. A duplicate or unknown role row is inconsistent state; report it and resolve it before probing. A bare host-native slug from an older sheet is also invalid because it does not say which provider owns it. If the sheet is missing, use the complete first-run role map and the model matrix's Default effort cells. On omp, the current state is the set of `pstack-*` keys under `task.agentModelOverrides`; every key must carry an explicit `:level` suffix from the effort universe, and a key that is not one of the ten lanes is inconsistent state.
+Read the current parent-specific sheet when it exists. Treat its values as current role-to-family assignments. Overlay its rows on the complete first-run role map in step 7. Materialize any missing documented role row from that map on the next successful write. A duplicate or unknown role row is inconsistent state; report it and resolve it before probing. A bare host-native slug from an older sheet is also invalid because it does not say which provider owns it. If the sheet is missing, use the complete first-run role map and the model matrix's Default effort cells. On omp, the current state is the two `pstack_fable` and `pstack_opus` rows under `modelRoles` plus the ten `pstack-*` rows under `task.agentModelOverrides`; every lane row must be an `"@pstack_<stem>:<level>"` alias whose level sits in the effort universe, and the two `modelRoles` rows must carry `provider/model:level` selectors. Legacy concrete lane rows (`<provider>/<model>:<level>` written directly) are valid loaded state from an earlier sheet: keep their family assignments and replace them with alias rows on the next successful write. A `pstack-*` lane row in any other shape is inconsistent state; stop and resolve it before probing.
 
 ### 3. Parse per-family efforts
 
@@ -63,7 +68,7 @@ Probe only the four selected `provider:model@effort` pairs. Run one probe per fa
 | Grok | Grok matrix row + selected effort | Grok CLI | Grok CLI | Grok CLI if installed, otherwise a named unconfigured family | `grok models` must list the requested model; one-turn probe |
 | Opus | Opus matrix row + selected effort | native Agent `pstack-opus-<effort>` | Claude CLI | native `task` lane `pstack-opus-<effort>` | native one-turn probe or `claude auth status --json` plus one-turn probe |
 
-Use a tiny read-only probe that returns a unique marker. A login-status command alone proves credentials, not that the requested model and effort flags run. Record native and external results separately. Never call the external launcher for the parent's own provider. On a Claude parent, the Fable and Opus probes are one-turn runs of the mapped `pstack-<stem>-<effort>` agent. On a Codex parent, the Sol probe is native `spawn_agent` with the selected `reasoning_effort`. On an omp parent, prove every requested selector in the registry first: `omp models` must list it, and one live `omp -p --no-extensions --model <provider>/<model>:<level>` marker probe must print the marker; a selector omp cannot resolve is a failed probe. Native lanes then prove themselves in the step 9 smoke. Every external pair uses the external runner with the selected effort flag.
+Use a tiny read-only probe that returns a unique marker. A login-status command alone proves credentials, not that the requested model and effort flags run. Record native and external results separately. Never call the external launcher for the parent's own provider. On a Claude parent, the Fable and Opus probes are one-turn runs of the mapped `pstack-<stem>-<effort>` agent. On a Codex parent, the Sol probe is native `spawn_agent` with the selected `reasoning_effort`. On an omp parent, prove every requested selector in the registry first: `omp models` must list the model, and its listed thinking levels are the clamp domain: map each lane effort to the nearest served level, ties upward, where a model serving none of the effort universe is a failed probe. Then one live `omp -p --no-extensions --model <provider>/<model>:<level>` marker probe per distinct clamped selector that will be written must print the marker; a selector omp cannot resolve is a failed probe. Native lanes then prove themselves in the step 9 smoke. Every external pair uses the external runner with the selected effort flag.
 
 Receipts and native transcripts prove the requested effort and the route. They do not prove a provider's hidden applied reasoning depth. There is no implicit timeout, weaker-model fallback, same-provider external fallback, or second mutable configuration source.
 
@@ -78,7 +83,7 @@ After effort selection, ask whether to keep those role-to-family assignments or 
 
 Require the final role map to contain at least one descriptor from each matrix family. The sheet stores effort only in role descriptors, so an unassigned family's selection cannot persist without adding a second source of truth.
 
-Rewrite every matrix-family descriptor to `provider:model@<requested effort for that family>`. Leave `inherit-parent` and `auto` unchanged. An effort-only rerun cannot change a role's family. Changing Grok's effort updates every Grok occurrence and does not move a Sol role onto Grok. Refuse an unqualified slug, an unavailable route, a model other than the four matrix families, or a provider/model mismatch. On omp, render the four family efforts as the ten per-lane rows shown in the omp sheet format instead of the role list below: the lane name carries the role, and each row's `:level` equals that lane's effort component.
+Rewrite every matrix-family descriptor to `provider:model@<requested effort for that family>`. Leave `inherit-parent` and `auto` unchanged. An effort-only rerun cannot change a role's family. Changing Grok's effort updates every Grok occurrence and does not move a Sol role onto Grok. Refuse an unqualified slug, an unavailable route, a model other than the four matrix families, or a provider/model mismatch. On omp, render the two `modelRoles` rows plus the ten alias rows shown in the omp sheet format instead of the role list below: the lane name carries the role, each `modelRoles` row carries its family's selector with the family's clamped requested effort, and each lane alias's `:level` is that lane's effort component clamped to the model's served levels.
 
 ### 7. Confirm and commit
 
@@ -115,7 +120,7 @@ interrogate reviewers: claude:claude-fable-5@max, codex:gpt-5.6-sol@max, grok:gr
 
 ### 8. Wire it in
 
-Render the parent integration in memory before either write. On Claude, the integration is the single `@~/.claude/pstack-models.md` include in `~/.claude/CLAUDE.md`. On Codex, it is the exact sheet bytes between one `<!-- pstack:models:begin -->` and `<!-- pstack:models:end -->` pair in `~/.codex/AGENTS.md`. On omp there is no integration artifact: `~/.omp/agent/config.yml` is live config, so the write itself is the wiring — snapshot the file, merge only the ten `pstack-*` keys under `task.agentModelOverrides`, and note that changes apply to new omp sessions. Replace that whole bounded block on a rerun. Insert one block at the end on first run. If either marker is missing, duplicated, or reversed, stop and report inconsistent state instead of guessing a boundary.
+Render the parent integration in memory before either write. On Claude, the integration is the single `@~/.claude/pstack-models.md` include in `~/.claude/CLAUDE.md`. On Codex, it is the exact sheet bytes between one `<!-- pstack:models:begin -->` and `<!-- pstack:models:end -->` pair in `~/.codex/AGENTS.md`. On omp there is no integration artifact: `~/.omp/agent/config.yml` is live config, so the write itself is the wiring — snapshot the file, merge only the two `pstack_*` keys under `modelRoles` and the ten `pstack-*` alias rows under `task.agentModelOverrides`, and note that changes apply to new omp sessions. Replace both bounded sets on a rerun, converting any legacy concrete lane rows to alias rows. Insert them on first run. If either marker is missing, duplicated, or reversed, stop and report inconsistent state instead of guessing a boundary.
 
 Snapshot every target's current bytes. Write the sheet and parent integration only after all four probes pass and the operator confirms. Read both targets back and compare them with the in-memory render. If either write or readback fails, restore every snapshot and report the failure. An unchanged rerun must produce byte-identical sheet and integration content after normalization.
 

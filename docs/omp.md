@@ -37,21 +37,24 @@ The block mirrors `plugins/pstack/hooks/session-start-context.md` with omp's fla
 
 The ten lane agents pin Cursor-native model names that omp's registry does not carry, and omp falls back silently to the parent model when an agent's frontmatter model cannot resolve. Without setup, every lane runs on whatever the session runs and the effort in each lane name is decorative.
 
-Run setup-pstack in omp once. It probes each selector through omp's registry (`omp models`, then a one-turn `omp -p --no-extensions --model <provider>/<model>:<level>` marker probe), and only after the probes pass writes ten `task.agentModelOverrides` rows into `~/.omp/agent/config.yml`:
+Run setup-pstack in omp once. It probes each selector through omp's registry (`omp models`, then one one-turn `omp -p --no-extensions --model <provider>/<model>:<level>` marker probe per distinct clamped selector), clamps each lane effort to the nearest thinking level the model actually serves (ties upward), and only after the probes pass writes the sheet into `~/.omp/agent/config.yml`:
 
 ```yaml
+modelRoles:
+  pstack_fable: <provider>/<model>:<clamped effort>
+  pstack_opus: <provider>/<model>:<clamped effort>
 task:
   agentModelOverrides:
-    pstack-fable-low: <provider>/<model>:low
-    pstack-fable-medium: <provider>/<model>:medium
-    pstack-fable-high: <provider>/<model>:high
-    pstack-fable-xhigh: <provider>/<model>:xhigh
-    pstack-fable-max: <provider>/<model>:max
-    pstack-opus-low: <provider>/<model>:low
-    pstack-opus-medium: <provider>/<model>:medium
-    pstack-opus-high: <provider>/<model>:high
-    pstack-opus-xhigh: <provider>/<model>:xhigh
-    pstack-opus-max: <provider>/<model>:max
+    pstack-fable-low: "@pstack_fable:low"
+    pstack-fable-medium: "@pstack_fable:high"
+    pstack-fable-high: "@pstack_fable:high"
+    pstack-fable-xhigh: "@pstack_fable:max"
+    pstack-fable-max: "@pstack_fable:max"
+    pstack-opus-low: "@pstack_opus:low"
+    pstack-opus-medium: "@pstack_opus:high"
+    pstack-opus-high: "@pstack_opus:high"
+    pstack-opus-xhigh: "@pstack_opus:max"
+    pstack-opus-max: "@pstack_opus:max"
 ```
 
-`task.agentModelOverrides` is omp's first-priority model source for a task agent, so no agent file is forked and nothing else in the config is touched. Changes apply to new omp sessions. Codex and Grok lanes keep the upstream `pstack-runner` contract when those CLIs are installed and authenticated.
+The example levels show a model that serves only `low`, `high`, and `max`: the render clamps `medium` and `xhigh` and writes the clamped level, so the config never claims a level omp would silently clamp at dispatch. Each family's selector lives in one `modelRoles` row; changing a panel model edits that single row and every lane follows. `task.agentModelOverrides` stays omp's first-priority model source for a task agent, so no agent file is forked and nothing else in the config is touched. Changes apply to new omp sessions. Codex and Grok lanes keep the upstream `pstack-runner` contract when those CLIs are installed and authenticated.
