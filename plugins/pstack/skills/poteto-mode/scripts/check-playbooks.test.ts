@@ -93,6 +93,16 @@ describe("third session audit gates", () => {
   it("investigation step 1 makes a skipped how visible", () => {
     expect(playbook("investigation")).toContain("how skipped: <reason>");
   });
+
+  it("names the one-line checkpoint form for read-only floor tasks", () => {
+    expect(skill).toContain("throughput checkpoint: n/a, read-only");
+  });
+
+  it("makes a direct investigation answer without how visible in the reply", () => {
+    expect(skill).toContain(
+      "names the skip in the reply as `how skipped: <reason>`",
+    );
+  });
 });
 
 describe("eval blinding survives an upstream sync", () => {
