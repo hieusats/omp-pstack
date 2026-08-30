@@ -4,8 +4,6 @@ import { parseArgs } from "./cli.ts";
 
 function argv(extra: readonly string[] = []): string[] {
   return [
-    "--parent",
-    "claude",
     "--provider",
     "codex",
     "--model",
@@ -41,7 +39,7 @@ describe("runner CLI parsing", () => {
     );
   });
 
-  it("accepts an omp parent for external lanes", () => {
-    expect(parseArgs(argv(["--parent", "omp"]))?.parent).toBe("omp");
+  it("rejects the removed --parent flag", () => {
+    expect(() => parseArgs(argv(["--parent", "omp"]))).toThrow("--parent");
   });
 });

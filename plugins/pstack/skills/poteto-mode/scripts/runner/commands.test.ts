@@ -4,7 +4,6 @@ import type { RunnerOptions } from "./types.ts";
 
 function options(overrides: Partial<RunnerOptions> = {}): RunnerOptions {
   return {
-    parent: "claude",
     provider: "codex",
     model: "gpt-5.6-sol",
     effort: "max",
@@ -52,7 +51,6 @@ describe("invocationCommand", () => {
   it("pins Claude model, effort, permissions, and no-recursion controls", () => {
     const spec = invocationCommand(
       options({
-        parent: "codex",
         provider: "claude",
         model: "claude-fable-5",
       })

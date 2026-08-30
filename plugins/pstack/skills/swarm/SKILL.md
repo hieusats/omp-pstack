@@ -7,11 +7,11 @@ description: "Fan out N parallel workers, drain them, and return one report. Use
 
 Fan out N parallel workers. They may cover separate slices, race the same brief, or mix both. The parent waits, aggregates, and returns one report.
 
-**Dispatch contract.** Resolve each worker descriptor through [`provider-dispatch.md`](../poteto-mode/references/provider-dispatch.md). The parent starts native and external lanes; workers never route themselves. On Codex, resolve remaining Claude tool names via [`codex-tools.md`](../poteto-mode/references/codex-tools.md).
+**Dispatch contract.** Resolve each worker descriptor through [`provider-dispatch.md`](../poteto-mode/references/provider-dispatch.md). The parent starts native and external lanes; workers never route themselves.
 
 ## Start
 
-Open a todolist with one entry per phase before launching anything.
+Open the `todo` tool with one entry per phase before launching anything.
 
 1. Frame
 2. Fan out
@@ -28,7 +28,7 @@ Open a todolist with one entry per phase before launching anything.
 
 ## Phase B: Fan out
 
-Start all N workers in one fan-out phase through provider dispatch. Native lanes use background subagents; external lanes invoke the launcher as background work with retained task/session handles. Never use Claude's foreground Bash path for a long worker. Every writer runs in its assigned worktree or output directory. Isolation comes from those paths, not the provider.
+Start all N workers in one fan-out phase through provider dispatch. Native lanes use background subagents; external lanes invoke the launcher as background work with retained task/session handles. Never run a long worker as a foreground `bash` call; launch background work and retain the job handle. Every writer runs in its assigned worktree or output directory. Isolation comes from those paths, not the provider.
 
 When a worker must start from a non-default branch, check that branch out in the worker's own worktree and name the worktree path in its brief.
 

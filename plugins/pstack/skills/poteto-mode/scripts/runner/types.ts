@@ -1,15 +1,11 @@
-export const PARENTS = ["claude", "codex", "omp"] as const;
 export const PROVIDERS = ["claude", "codex", "grok"] as const;
 export const EFFORTS = ["low", "medium", "high", "xhigh", "max"] as const;
 export const ACCESS_MODES = ["read-only", "isolated-write"] as const;
-
-export type Parent = (typeof PARENTS)[number];
 export type Provider = (typeof PROVIDERS)[number];
 export type Effort = (typeof EFFORTS)[number];
 export type AccessMode = (typeof ACCESS_MODES)[number];
 
 export interface RunnerOptions {
-  readonly parent: Parent;
   readonly provider: Provider;
   readonly model: string;
   readonly effort: Effort;
@@ -51,7 +47,7 @@ export interface ParsedOutput {
 export interface RunnerReceipt {
   readonly schemaVersion: 1;
   readonly status: ReceiptStatus;
-  readonly parent: Parent;
+  readonly parent: "omp";
   readonly provider: Provider;
   readonly model: string;
   readonly effort: Effort;

@@ -32,5 +32,5 @@ jobs:
         run: bun run typecheck
       - name: Validate manifests and static invariants
         run: |
-          bun -e 'for (const path of [".claude-plugin/marketplace.json", ".omp-plugin/marketplace.json", ".agents/plugins/marketplace.json", "plugins/pstack/.claude-plugin/plugin.json", "plugins/pstack/.codex-plugin/plugin.json"]) JSON.parse(await Bun.file(path).text())'
-          PSTACK_STATIC_ONLY=1 bash tests/skill-collision-repro.sh
+          bun -e 'for (const path of [".omp-plugin/marketplace.json", "plugins/pstack/.omp-plugin/plugin.json"]) JSON.parse(await Bun.file(path).text())'
+          bash tests/skill-collision-repro.sh

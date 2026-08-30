@@ -1,6 +1,14 @@
 # CHANGES — applied substitutions
 
-This port applies the Cursor → Claude Code substitutions in skill bodies. Earlier drafts left them flagged; this revision resolves them. A later pass added a Codex build that shares the same skills; see [Codex port](#codex-port) below.
+This record covers the whole port history. It began as Cursor → Claude Code substitutions, added a Codex build, then a 1.3.0 omp target, and from 2.0.0 omp is the only target. Sections below their release describe the tree as it was at that release; the 2.0.0 section describes the current tree.
+
+## 2.0.0 makes omp the only target; Claude Code and Codex removed
+
+This fork is now an omp-only distribution. Every Claude Code and Codex surface is gone: the root `.claude-plugin/marketplace.json`, the plugin's `.claude-plugin/plugin.json` and `.codex-plugin/plugin.json`, the root `.agents/plugins/marketplace.json`, the Claude Code `hooks/` runtime (SessionStart hook, `run-hook.cmd`, and the mandate context file), the cross-harness tool-mapping reference `codex-tools.md`, and `LICENSE-superpowers` (it covered only the deleted hook runner). The plugin manifest now lives at `plugins/pstack/.omp-plugin/plugin.json`, omp's first-choice manifest path, and the catalog stays at `.omp-plugin/marketplace.json`.
+
+The skill tree is written omp-first. Skill prose names omp tools directly (`read`, `write`, `edit`, `bash`, `grep`, `glob`, `task`, `todo`, `ask`, `browser`), skills resolve under flat names, Claude tool names and built-in skills are replaced with their omp equivalents, and harness names are banned from the tree by a test. The model matrix survives unchanged: claude, codex, and grok remain external provider lanes, because a provider lane is a model route, not a harness target. `pstack-runner` drops its `--parent` flag entirely and pins `parent: "omp"` in every receipt; with one parent the same-provider rejection was dead code and is removed.
+
+`setup-pstack` is omp-only end to end: one probe table, one config artifact (`task.agentModelOverrides` in `~/.omp/agent/config.yml`), no sheet includes. The maintainer rules (`AGENTS.md`), `UPSTREAM.md`, `README.md`, `docs/reference.md`, `docs/omp.md`, and `NOTICE.md` all describe the omp-only tree, and `tests/skill-collision-repro.sh` is static-only with a two-manifest version chain (its Claude `--plugin-dir` behavioral repro is dead without Claude Code and is deleted). The breaking target removal bumps the distribution to 2.0.0.
 
 ## 1.3.0 ships the omp-native session mandate and the omp-preferred catalog
 
