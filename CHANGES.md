@@ -407,6 +407,14 @@ An independent verifier passed every local gate, the pin review, and the install
 - **Reply-contract checkpoint.** "Writing the reply" now ends its bullet list with the rule: every reply ends with the throughput checkpoint line, one-line n/a form for read-only and below-floor work, and skip markers ride the same rule. A reply without it is not done.
 - **Regression tests.** `scripts/check-playbooks.test.ts` pins the clause red-first.
 
+### Loop round one (deadline-bound delegation, issue #14)
+
+A seven-scenario battery of real `omp -p` sessions ran against the candidate build. Six scenarios cleared every gate, including honest empty-citation refusals and below-floor one-line checkpoints. The seventh followed every gate yet died on its own deadline: its scout read an 800KB corpus for an inventory assignment and the main session set a ten-minute blind `hub wait` against an eight-minute session budget, so no final reply existed to audit.
+
+- **Delegation depth bound.** The delegation defaults now make depth part of the contract: an inventory or summary assignment says what depth it needs and forbids full-corpus reads the answer does not require.
+- **Wait sizing.** A `hub wait` timeout is sized to the work still owed after the result, with a short wait plus a `hub jobs` re-check preferred over one long blind block.
+- **Regression tests.** `scripts/check-playbooks.test.ts` pins both clauses red-first.
+
 ## Forking note
 
 This port now diverges from upstream pstack content. To track upstream:
