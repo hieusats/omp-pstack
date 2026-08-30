@@ -10,7 +10,7 @@ omp-pstack tracks [Cursor's pstack](https://github.com/cursor/plugins/tree/main/
 | Path | `pstack/` |
 | Commit | `6fecddba65801f9b9c08b8b328d998ee5b09d290` |
 | Upstream version | `0.14.5` |
-| omp-pstack version | `2.1.1` |
+| omp-pstack version | `2.1.2` |
 
 The table above is the current Cursor sync point. omp-pstack 2.1.0 records this 0.14.5 sync. The only content change upstream is the `make-bot-ui` skill, which is built on Cursor product primitives with no omp equivalent (the `update_state` routine tool, the Routines panel, `api2.cursor.sh` webhooks, `SendToUser` secret-request cards), so it is deliberately not ported; see `CHANGES.md`. `README-UPSTREAM.md` preserves its pstack README verbatim. `CHANGES.md` and `NOTICE.md` describe the adaptations and provenance.
 
