@@ -30,17 +30,20 @@ export function isActivationText(text) {
 }
 
 /**
- * True when tool-call arguments (the JSON string omp hands the event) read
- * the poteto-mode skill: the skill URI, or a filesystem path ending in the
- * SKILL.md suffix.
+ * True when tool-call arguments read the poteto-mode skill: the skill URI, or
+ * a filesystem path ending in the SKILL.md suffix. omp hands events a JSON
+ * string but persists the journal entry with the arguments already parsed.
  * @param {unknown} args
  * @returns {boolean}
  */
 function argsActivate(args) {
-  return (
-    typeof args === "string" &&
-    (args.includes(SKILL_URI) || args.includes(SKILL_PATH))
-  );
+  const text =
+    typeof args === "string"
+      ? args
+      : args !== null && typeof args === "object"
+        ? JSON.stringify(args)
+        : "";
+  return text.includes(SKILL_URI) || text.includes(SKILL_PATH);
 }
 
 /**

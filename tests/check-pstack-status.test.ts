@@ -88,6 +88,13 @@ describe("entryActivates", () => {
     expect(entryActivates(toolEntry(args))).toBe(true);
   });
 
+  it("activates when the journal persists the arguments as a parsed object", () => {
+    expect(entryActivates(toolEntry({ path: SKILL_URI }))).toBe(true);
+    expect(entryActivates(toolEntry({ path: `/x/${SKILL_PATH}` }))).toBe(true);
+    expect(entryActivates(toolEntry({ path: ".", i: "map repo" }))).toBe(false);
+    expect(entryActivates(toolEntry({ path: "skill://deslop" }))).toBe(false);
+  });
+
   it("activates on a user message entry whose text blocks carry the marker", () => {
     const entry = {
       type: "message",
