@@ -1,327 +1,250 @@
 import { describe, expect, it } from "bun:test";
-import { chmodSync, existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import pstackStatusLine, {
-  LANES,
+  DISPATCH_MARKER,
+  SKILL_PATH,
+  SKILL_URI,
   STATUS_KEY,
-  classifySheet,
-  configPath,
-  extractLaneEntries,
-  parseSlug,
-  readSheet,
-  renderStatus,
+  STATUS_TEXT,
+  entryActivates,
+  isActivationText,
+  scanEntries,
 } from "../plugins/pstack/extension/index.js";
 
 const repo = join(import.meta.dir, "..");
 
-// Mirrors the live task.agentModelOverrides block setup-pstack writes.
-const LIVE_SHEET = [
-  "compaction:",
-  "  thresholdPercent: 50",
-  "task:",
-  "  agentModelOverrides:",
-  "    pstack-scout: zai/glm-5.3-flash:max",
-  "    pstack-librarian: zai/glm-5.3-flash:max",
-  "    pstack-sonic: zai/glm-5.3-flash:max",
-  "    pstack-designer: zai/glm-5.3:max",
-  "    pstack-reviewer: zai/glm-5.3:max",
-  "    pstack-security-reviewer: zai/glm-5.3:max",
-  "    pstack-task: zai/glm-5.3:max",
-  "display:",
-  "  showTokenUsage: true",
-  "",
-].join("\n");
+type Handler = (event: unknown, ctx: unknown) => unknown;
 
-const laneEntries = (values: string[]) => LANES.map((key, i) => ({ key, value: values[i] }));
+const toolEntry = (args: unknown) => ({
+  type: "custom",
+  customType: "tool_execution_start",
+  data: { toolName: "read", args, intent: "read the skill", startedAt: 1, toolCallId: "t1" },
+});
 
-// scout, librarian, sonic run the flash model; the other four the full one.
-const liveRows = () =>
-  LANES.map((lane) => {
-    const model = lane === "pstack-scout" || lane === "pstack-librarian" || lane === "pstack-sonic"
-      ? "glm-5.3-flash"
-      : "glm-5.3";
-    const raw = `zai/${model}:max`;
-    return { lane, raw, slug: { provider: "zai", model, effort: "max" } };
+const userMessage = (text: string) => ({
+  type: "message",
+  message: { role: "user", content: [{ type: "text", text }] },
+});
+
+const activatingArgs = JSON.stringify({ path: SKILL_URI });
+
+function wire() {
+  const events: string[] = [];
+  const handlers: Record<string, Handler> = {};
+  pstackStatusLine({
+    on: (event, handler) => {
+      events.push(event);
+      handlers[event] = handler;
+    },
   });
+  return { events, handlers };
+}
 
-describe("status line contract", () => {
-  it("keys the line pstack and orders the canonical lanes", () => {
+function recordingCtx(calls: Array<{ key: string; text: string }>) {
+  return {
+    ui: {
+      setStatus: (key: string, text: string) => {
+        calls.push({ key, text });
+      },
+    },
+  };
+}
+
+describe("markers", () => {
+  it("carries the exact activation markers and status text", () => {
     expect(STATUS_KEY).toBe("pstack");
-    expect([...LANES]).toEqual([
-      "pstack-scout",
-      "pstack-librarian",
-      "pstack-sonic",
-      "pstack-designer",
-      "pstack-reviewer",
-      "pstack-security-reviewer",
-      "pstack-task",
-    ]);
-  });
-
-  it("renders the three states byte-for-byte", () => {
-    expect(renderStatus({ state: "unconfigured" })).toBe(
-      "pstack: unconfigured - run /skill:setup-pstack",
-    );
-    const configured = classifySheet(extractLaneEntries(LIVE_SHEET));
-    expect(renderStatus(configured)).toBe(
-      "pstack: configured - 7 lanes: zai/glm-5.3-flash:max, zai/glm-5.3:max",
-    );
-    const inconsistent = classifySheet([
-      { key: "pstack-runner", value: "zai/glm-5.3:low" },
-      { key: "pstack-librarian", value: "zai/glm-5.3:max" },
-      { key: "pstack-sonic", value: "zai/glm-5.3-flash:max" },
-      { key: "pstack-designer", value: "zai/glm-5.3:max" },
-      { key: "pstack-reviewer", value: "zai/glm-5.3:max" },
-      { key: "pstack-security-reviewer", value: "zai/glm-5.3:max" },
-    ]);
-    expect(renderStatus(inconsistent)).toBe(
-      "pstack: inconsistent - unknown lane: pstack-runner, missing lane: pstack-scout (+1 more)",
-    );
+    expect(STATUS_TEXT).toBe("pstack: poteto-mode");
+    expect(SKILL_URI).toBe("skill://poteto-mode");
+    expect(SKILL_PATH).toBe("skills/poteto-mode/SKILL.md");
+    expect(DISPATCH_MARKER).toBe('User invoked the "poteto-mode" skill');
   });
 });
 
-describe("parseSlug", () => {
-  it("parses provider/model:effort selectors", () => {
-    expect(parseSlug("zai/glm-5.3-flash:max")).toEqual({
-      provider: "zai",
-      model: "glm-5.3-flash",
-      effort: "max",
-    });
+describe("isActivationText", () => {
+  it("matches the dispatch marker", () => {
+    expect(isActivationText(DISPATCH_MARKER)).toBe(true);
+    expect(isActivationText(`Saw: ${DISPATCH_MARKER} — applying the style.`)).toBe(true);
   });
 
-  it("accepts the setup aliases verbatim", () => {
-    expect(parseSlug("inherit-parent")).toEqual({ alias: "inherit-parent" });
-    expect(parseSlug("auto")).toEqual({ alias: "auto" });
-  });
-
-  it("rejects mangled selectors", () => {
-    expect(parseSlug("zai/glm-5.3:max@high")).toBeNull();
-    expect(parseSlug("zai/glm-5.3:banana")).toBeNull();
-    expect(parseSlug("glm-5.3:max")).toBeNull();
-    expect(parseSlug("zai/glm-5.3")).toBeNull();
-    expect(parseSlug("zai/glm 5.3:max")).toBeNull();
+  it("rejects prose that merely mentions poteto-mode", () => {
+    expect(isActivationText("Should I read skill://poteto-mode first?")).toBe(false);
+    expect(isActivationText("poteto-mode is my working style")).toBe(false);
+    expect(isActivationText('User invoked the "deslop" skill')).toBe(false);
+    expect(isActivationText("")).toBe(false);
+    expect(isActivationText(undefined)).toBe(false);
+    expect(isActivationText(null)).toBe(false);
+    expect(isActivationText(42)).toBe(false);
   });
 });
 
-describe("classifySheet", () => {
-  it("reads an empty extraction as unconfigured", () => {
-    expect(classifySheet([])).toEqual({ state: "unconfigured" });
+describe("entryActivates", () => {
+  it("activates on a custom tool_execution_start entry carrying the skill URI", () => {
+    expect(entryActivates(toolEntry(activatingArgs))).toBe(true);
   });
 
-  it("names non-lane pstack-* keys as unknown lanes", () => {
-    const sheet = classifySheet([{ key: "pstack-runner", value: "zai/glm-5.3:low" }]);
-    expect(sheet.state).toBe("inconsistent");
-    expect(sheet.problems![0]).toEqual({ code: "unknown-lane", message: "unknown lane: pstack-runner" });
+  it("activates on a filesystem path ending in the SKILL.md suffix", () => {
+    const args = JSON.stringify({ path: `/home/x/.omp/plugins/pstack/${SKILL_PATH}` });
+    expect(entryActivates(toolEntry(args))).toBe(true);
   });
 
-  it("names absent lanes as missing, in LANES order", () => {
-    const sheet = classifySheet([{ key: "pstack-task", value: "zai/glm-5.3:max" }]);
-    expect(sheet.state).toBe("inconsistent");
-    const missing = sheet.problems!.filter((p) => p.code === "missing-lane");
-    expect(missing).toHaveLength(6);
-    expect(missing[0].message).toBe("missing lane: pstack-scout");
-    expect(missing[5].message).toBe("missing lane: pstack-security-reviewer");
+  it("activates on a user message entry whose text blocks carry the marker", () => {
+    const entry = {
+      type: "message",
+      message: {
+        role: "user",
+        content: [
+          { type: "text", text: "On it." },
+          { type: "text", text: `${DISPATCH_MARKER} — keep it tight.` },
+        ],
+      },
+    };
+    expect(entryActivates(entry)).toBe(true);
   });
 
-  it("names bad selectors per lane", () => {
-    const sheet = classifySheet(laneEntries([
-      "zai/glm-5.3:max@high",
-      "zai/glm-5.3:max",
-      "zai/glm-5.3:banana",
-      "zai/glm-5.3:max",
-      "zai/glm-5.3:max",
-      "zai/glm-5.3:max",
-      "zai/glm-5.3:max",
-    ]));
-    expect(sheet.state).toBe("inconsistent");
-    expect(sheet.problems![0].code).toBe("bad-slug");
-    expect(sheet.problems![0].message).toBe("invalid selector for pstack-scout: zai/glm-5.3:max@high");
-    expect(sheet.problems![1].message).toBe("invalid selector for pstack-sonic: zai/glm-5.3:banana");
-  });
-
-  it("accepts the setup aliases in place of selectors", () => {
-    const sheet = classifySheet(LANES.map((key, i) => ({ key, value: i % 2 ? "auto" : "inherit-parent" })));
-    expect(sheet.state).toBe("configured");
-    expect(sheet.rows![0].slug).toEqual({ alias: "inherit-parent" });
-    expect(sheet.rows![1].slug).toEqual({ alias: "auto" });
-  });
-
-  it("classifies the live sheet shape as configured, in LANES order", () => {
-    const sheet = classifySheet(extractLaneEntries(LIVE_SHEET));
-    expect(sheet.state).toBe("configured");
-    expect(sheet.rows).toEqual(liveRows());
-  });
-});
-
-describe("extractLaneEntries", () => {
-  it("stops at the indentation window around agentModelOverrides", () => {
-    const yaml = [
-      "task:",
-      "  agentModelOverrides:",
-      "    pstack-scout: zai/a:low",
-      "    other-agent: zai/x:low",
-      "  prompt: keep",
-      "display:",
-      "  pstack-runner: zai/c:low",
-      "",
-    ].join("\n");
-    expect(extractLaneEntries(yaml)).toEqual([{ key: "pstack-scout", value: "zai/a:low" }]);
-  });
-
-  it("parses CRLF config files", () => {
-    const yaml = "task:\r\n  agentModelOverrides:\r\n    pstack-scout: zai/a:low\r\n";
-    expect(extractLaneEntries(yaml)).toEqual([{ key: "pstack-scout", value: "zai/a:low" }]);
-  });
-
-  it("unquotes quoted values", () => {
-    const yaml = [
-      "task:",
-      "  agentModelOverrides:",
-      '    pstack-scout: "zai/a:low"',
-      "    pstack-task: 'inherit-parent'",
-      "",
-    ].join("\n");
-    expect(extractLaneEntries(yaml)).toEqual([
-      { key: "pstack-scout", value: "zai/a:low" },
-      { key: "pstack-task", value: "inherit-parent" },
-    ]);
-  });
-
-  it("lets a repeated lane row win", () => {
-    const yaml = [
-      "task:",
-      "  agentModelOverrides:",
-      "    pstack-scout: zai/a:low",
-      "    pstack-scout: zai/b:max",
-      "",
-    ].join("\n");
-    expect(extractLaneEntries(yaml)).toEqual([{ key: "pstack-scout", value: "zai/b:max" }]);
-  });
-
-  it("ignores pstack- keys outside task.agentModelOverrides", () => {
-    const yaml = [
-      "rules:",
-      "  pstack-runner: zai/a:low",
-      "task:",
-      "  prompt: x",
-      "display:",
-      "  pstack-runner: zai/c:low",
-      "",
-    ].join("\n");
-    expect(extractLaneEntries(yaml)).toEqual([]);
-  });
-
-  it("returns nothing when the sheet block is absent", () => {
-    expect(extractLaneEntries("task:\n  prompt: x\n")).toEqual([]);
-    expect(extractLaneEntries("compaction:\n  thresholdPercent: 50\n")).toEqual([]);
-  });
-});
-
-describe("renderStatus", () => {
-  it("dedups selectors in LANES order, not value order", () => {
-    const sheet = classifySheet(laneEntries([
-      "zai/b:low", "zai/a:low", "zai/b:low", "zai/a:low", "zai/b:low", "zai/a:low", "zai/b:low",
-    ]));
-    expect(renderStatus(sheet)).toBe("pstack: configured - 7 lanes: zai/b:low, zai/a:low");
-  });
-
-  it("caps the configured line at three selectors plus N more", () => {
-    const sheet = classifySheet(laneEntries([
-      "zai/a:low", "zai/b:low", "zai/c:low", "zai/d:low", "zai/a:low", "zai/b:low", "zai/c:low",
-    ]));
-    expect(renderStatus(sheet)).toBe("pstack: configured - 7 lanes: zai/a:low, zai/b:low, zai/c:low +1 more");
-  });
-
-  it("caps the inconsistent line at two fragments plus N more", () => {
-    const sheet = classifySheet([{ key: "pstack-runner", value: "zai/glm-5.3:low" }]);
-    expect(sheet.problems).toHaveLength(8); // 1 unknown + all 7 lanes missing
-    expect(renderStatus(sheet)).toBe(
-      "pstack: inconsistent - unknown lane: pstack-runner, missing lane: pstack-scout (+6 more)",
-    );
-  });
-
-  it("leads every line with the state word", () => {
-    const sheets = [
-      { state: "unconfigured" as const },
-      classifySheet(extractLaneEntries(LIVE_SHEET)),
-      classifySheet([{ key: "pstack-runner", value: "zai/glm-5.3:low" }]),
-    ];
-    for (const sheet of sheets) {
-      expect(renderStatus(sheet)).toMatch(/^pstack: (unconfigured|configured|inconsistent)\b/);
-    }
-  });
-
-  it("stays ASCII-only across every literal", () => {
-    const outputs = [
-      renderStatus({ state: "unconfigured" }),
-      renderStatus(classifySheet(extractLaneEntries(LIVE_SHEET))),
-      renderStatus(classifySheet(laneEntries([
-        "zai/a:low", "zai/b:low", "zai/c:low", "zai/d:low", "zai/a:low", "zai/b:low", "zai/c:low",
-      ]))),
-      renderStatus(classifySheet([{ key: "pstack-runner", value: "zai/glm-5.3:low" }])),
-      renderStatus(classifySheet([{ key: "pstack-scout", value: "zai/glm-5.3:banana" }])),
-      renderStatus({
-        state: "inconsistent",
-        problems: [{ code: "unreadable-config", message: "config unreadable: EACCES: bad day" }],
+  it("rejects near misses", () => {
+    expect(entryActivates(toolEntry(JSON.stringify({ path: "." })))).toBe(false);
+    expect(entryActivates(toolEntry(JSON.stringify({ path: "skill://deslop" })))).toBe(false);
+    expect(entryActivates(toolEntry(JSON.stringify({ path: "skills/poteto-mode/README.md" })))).toBe(false);
+    expect(entryActivates(toolEntry("{}"))).toBe(false);
+    expect(entryActivates(toolEntry(42))).toBe(false);
+    expect(
+      entryActivates({
+        type: "message",
+        message: { role: "assistant", content: [{ type: "text", text: DISPATCH_MARKER }] },
       }),
-    ];
-    for (const text of outputs) {
-      expect(text).toMatch(/^[\x20-\x7E]*$/);
-    }
+    ).toBe(false);
+    expect(entryActivates(userMessage("please read skills/poteto-mode/SKILL.md for me"))).toBe(false);
+    expect(entryActivates({ type: "custom", customType: "tool_execution_end", data: { args: activatingArgs } })).toBe(false);
+    expect(entryActivates(SKILL_URI)).toBe(false);
+    expect(entryActivates(null)).toBe(false);
+    expect(entryActivates(undefined)).toBe(false);
   });
 });
 
-describe("readSheet", () => {
-  it("classifies a real config file and a missing one", async () => {
-    const dir = mkdtempSync(join(tmpdir(), "pstack-status-"));
-    try {
-      const file = join(dir, "config.yml");
-      writeFileSync(file, LIVE_SHEET);
-      expect(await readSheet(file)).toEqual({ state: "configured", rows: liveRows() });
-      expect(await readSheet(join(dir, "missing.yml"))).toEqual({ state: "unconfigured" });
-    } finally {
-      rmSync(dir, { recursive: true, force: true });
-    }
+describe("scanEntries", () => {
+  const fixture = [
+    { type: "session" },
+    userMessage("fix the flaky test"),
+    {
+      type: "message",
+      message: { role: "assistant", content: [{ type: "text", text: "On it." }] },
+    },
+    toolEntry(activatingArgs),
+    { type: "custom", customType: "tool_execution_end", data: { toolCallId: "t1" } },
+  ];
+
+  it("finds an activation in a fixture journal slice", () => {
+    expect(scanEntries(fixture)).toBe(true);
   });
 
-  it.skipIf(process.getuid?.() === 0)("reports an unreadable config as inconsistent", async () => {
-    const dir = mkdtempSync(join(tmpdir(), "pstack-status-"));
-    try {
-      const locked = join(dir, "locked.yml");
-      writeFileSync(locked, "task:\n");
-      chmodSync(locked, 0o000);
-      const sheet = await readSheet(locked);
-      expect(sheet.state).toBe("inconsistent");
-      expect(sheet.problems![0].code).toBe("unreadable-config");
-      expect(sheet.problems![0].message.startsWith("config unreadable: ")).toBe(true);
-    } finally {
-      rmSync(dir, { recursive: true, force: true });
-    }
-  });
-
-  it("locates the config under a home", () => {
-    expect(configPath("/home/me")).toBe("/home/me/.omp/agent/config.yml");
+  it("returns false without a signal and for non-arrays", () => {
+    expect(scanEntries([userMessage("fix the flaky test")])).toBe(false);
+    expect(scanEntries([])).toBe(false);
+    expect(scanEntries(undefined)).toBe(false);
+    expect(scanEntries(activatingArgs)).toBe(false);
   });
 });
 
 describe("plugin wiring", () => {
-  it("registers exactly one silent session_start handler", async () => {
-    const events: string[] = [];
-    const handlers: Record<string, (event: unknown, ctx: unknown) => Promise<void>> = {};
-    pstackStatusLine({
-      on: (event, handler) => {
-        events.push(event);
-        handlers[event] = handler;
-      },
-    });
-    expect(events).toEqual(["session_start"]);
-    // A throwing status surface must not reject the handler.
-    await handlers.session_start({}, {
-      ui: { setStatus: () => { throw new Error("boom"); } },
-    });
+  it("wires exactly session_start, before_agent_start, and tool_execution_start", () => {
+    expect(wire().events).toEqual(["session_start", "before_agent_start", "tool_execution_start"]);
   });
 
+  it("draws nothing before activation", () => {
+    const calls: Array<{ key: string; text: string }> = [];
+    const { handlers } = wire();
+    const ctx = recordingCtx(calls);
+    handlers.session_start({}, ctx);
+    handlers.tool_execution_start({ data: { toolName: "bash", args: JSON.stringify({ command: "ls ." }) } }, ctx);
+    expect(calls).toEqual([]);
+  });
+
+  it("draws the exact STATUS_TEXT after an activating tool_execution_start", () => {
+    const calls: Array<{ key: string; text: string }> = [];
+    const { handlers } = wire();
+    handlers.tool_execution_start(
+      { data: { toolName: "read", args: activatingArgs } },
+      recordingCtx(calls),
+    );
+    expect(calls).toEqual([{ key: STATUS_KEY, text: "pstack: poteto-mode" }]);
+  });
+
+  it("accepts the payload both directly and nested under .data", () => {
+    const directTool: Array<{ key: string; text: string }> = [];
+    const { handlers } = wire();
+    handlers.tool_execution_start(
+      { toolName: "read", args: activatingArgs },
+      recordingCtx(directTool),
+    );
+    expect(directTool).toEqual([{ key: STATUS_KEY, text: STATUS_TEXT }]);
+
+    const directPrompt: Array<{ key: string; text: string }> = [];
+    handlers.before_agent_start({ prompt: DISPATCH_MARKER }, recordingCtx(directPrompt));
+    expect(directPrompt).toEqual([{ key: STATUS_KEY, text: STATUS_TEXT }]);
+
+    const nestedPrompt: Array<{ key: string; text: string }> = [];
+    handlers.before_agent_start(
+      { data: { prompt: DISPATCH_MARKER, images: [] } },
+      recordingCtx(nestedPrompt),
+    );
+    expect(nestedPrompt).toEqual([{ key: STATUS_KEY, text: STATUS_TEXT }]);
+  });
+
+  it("latches once and re-asserts on later events", () => {
+    const calls: Array<{ key: string; text: string }> = [];
+    const { handlers } = wire();
+    handlers.before_agent_start({ prompt: DISPATCH_MARKER }, recordingCtx(calls));
+    handlers.tool_execution_start(
+      { data: { toolName: "read", args: "{}" } },
+      recordingCtx(calls),
+    );
+    handlers.session_start({}, recordingCtx(calls));
+    expect(calls).toEqual([
+      { key: STATUS_KEY, text: STATUS_TEXT },
+      { key: STATUS_KEY, text: STATUS_TEXT },
+      { key: STATUS_KEY, text: STATUS_TEXT },
+    ]);
+  });
+
+  it("stays silent when the status surface throws", () => {
+    const { handlers } = wire();
+    const throwing = {
+      ui: {
+        setStatus: () => {
+          throw new Error("boom");
+        },
+      },
+    };
+    handlers.before_agent_start({ prompt: DISPATCH_MARKER }, throwing);
+    handlers.tool_execution_start({ data: { toolName: "read", args: activatingArgs } }, throwing);
+    handlers.session_start({}, throwing);
+  });
+
+  it("rescans journal entries on session_start via the session manager", () => {
+    const calls: Array<{ key: string; text: string }> = [];
+    const { handlers } = wire();
+    const ctx = {
+      ...recordingCtx(calls),
+      sessionManager: {
+        getBranch: () => ({
+          getEntries: () => [userMessage("fix the flaky test"), toolEntry(activatingArgs)],
+        }),
+      },
+    };
+    handlers.session_start({}, ctx);
+    expect(calls).toEqual([{ key: STATUS_KEY, text: STATUS_TEXT }]);
+  });
+
+  it("skips the rescan when no session manager is present", () => {
+    const calls: Array<{ key: string; text: string }> = [];
+    const { handlers } = wire();
+    handlers.session_start({}, recordingCtx(calls));
+    expect(calls).toEqual([]);
+  });
+});
+
+describe("static checks", () => {
   it("declares the extension through a minimal plugin package", () => {
     const pkg = JSON.parse(readFileSync(join(repo, "plugins/pstack/package.json"), "utf8"));
     expect(pkg.name).toBe("pstack");
@@ -329,7 +252,6 @@ describe("plugin wiring", () => {
     expect(pkg.omp).toEqual({ extensions: ["./extension/index.js"] });
     expect("dependencies" in pkg).toBe(false);
     expect("version" in pkg).toBe(false);
-    expect("type" in pkg).toBe(false);
     expect(existsSync(join(repo, "plugins/pstack/extension/index.js"))).toBe(true);
     expect(typeof pstackStatusLine).toBe("function");
   });
