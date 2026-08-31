@@ -38,3 +38,15 @@ task:
 ```
 
 `task.agentModelOverrides` is omp's first-priority model source for a task agent, so no agent file is forked and nothing else in the config is touched. Changes apply to new omp sessions. Codex and Grok lanes keep the upstream `pstack-runner` contract when those CLIs are installed and authenticated.
+
+## Status line
+
+The plugin ships a small runtime extension that draws one status line, keyed `pstack`, only in sessions where poteto-mode has been activated. The line reads exactly:
+
+```
+pstack: poteto-mode
+```
+
+A session that never activates poteto-mode draws no line at all. Activation is detected from the session's own events, never configured: a user turn carrying the skill-dispatch marker (`User invoked the "poteto-mode" skill`), or a tool execution whose arguments read the skill — `skill://poteto-mode`, or a filesystem path ending in `skills/poteto-mode/SKILL.md`. Prose that merely mentions poteto-mode and tool calls against other skills match nothing. On session start the extension also rescans the session journal for the same signals, so a resumed session that already activated poteto-mode keeps its line. The latch is monotonic: once drawn, the line stays for the rest of the session.
+
+The line renders when omp's `statusLine.showHookStatus` is on (the schema default; opt out by setting it to `false` in `~/.omp/agent/config.yml`). Every draw is event-driven — no polling, no timers — and a failed draw never interrupts the session.

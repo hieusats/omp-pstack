@@ -68,7 +68,7 @@ omp plugin marketplace add hieusats/omp-pstack
 omp plugin install pstack@omp-pstack
 ```
 
-omp discovers the skills under flat names (`/skill:architect`, `skill://poteto-mode`) and the nine agents natively. The startup mandate ships as an always-apply rule (`rules/pstack-session-mandate.md`) that omp injects into every session automatically. See [docs/omp.md](docs/omp.md). Then run setup-pstack to map the model lanes in `~/.omp/agent/config.yml`.
+omp discovers the skills under flat names (`/skill:architect`, `skill://poteto-mode`) and the nine agents natively. The startup mandate ships as an always-apply rule (`rules/pstack-session-mandate.md`) that omp injects into every session automatically. With omp's `statusLine.showHookStatus` on, the plugin also draws a one-line `pstack: poteto-mode` status line in every session where poteto-mode has been activated. See [docs/omp.md](docs/omp.md). Then run setup-pstack to map the model lanes in `~/.omp/agent/config.yml`.
 
 ## Get started
 
