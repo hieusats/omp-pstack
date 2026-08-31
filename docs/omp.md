@@ -41,10 +41,12 @@ task:
 
 ## Status line
 
-The plugin ships a small runtime extension that draws one status line per omp session, keyed `pstack`. At session start it reads `task.agentModelOverrides` from `~/.omp/agent/config.yml` and reports the lane sheet as it finds it:
+The plugin ships a small runtime extension that draws one status line, keyed `pstack`, only in sessions where poteto-mode has been activated. The line reads exactly:
 
-- no sheet rows (a fresh machine): `pstack: unconfigured - run /skill:setup-pstack`
-- all seven lanes mapped: `pstack: configured - 7 lanes: <selector>, ...` — the distinct selectors in lane order, at most three shown, then `+N more`
-- unknown `pstack-*` keys, invalid selectors, or missing lanes: `pstack: inconsistent - <problem>, ...` — at most two fragments shown, then `(+N more)`; an unreadable config file reports a `config unreadable: <reason>` fragment the same way
+```
+pstack: poteto-mode
+```
 
-The line renders when omp's `statusLine.showHookStatus` is on (the schema default; opt out by setting it to `false` in `~/.omp/agent/config.yml`). It is drawn once per session start — no polling, no timers — and a failed draw never interrupts the session.
+A session that never activates poteto-mode draws no line at all. Activation is detected from the session's own events, never configured: a user turn carrying the skill-dispatch marker (`User invoked the "poteto-mode" skill`), or a tool execution whose arguments read the skill — `skill://poteto-mode`, or a filesystem path ending in `skills/poteto-mode/SKILL.md`. Prose that merely mentions poteto-mode and tool calls against other skills match nothing. On session start the extension also rescans the session journal for the same signals, so a resumed session that already activated poteto-mode keeps its line. The latch is monotonic: once drawn, the line stays for the rest of the session.
+
+The line renders when omp's `statusLine.showHookStatus` is on (the schema default; opt out by setting it to `false` in `~/.omp/agent/config.yml`). Every draw is event-driven — no polling, no timers — and a failed draw never interrupts the session.
