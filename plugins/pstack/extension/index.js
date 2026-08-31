@@ -100,10 +100,12 @@ export function scanEntries(entries) {
 }
 
 /**
- * omp extension entry: wires session_start, before_agent_start, and
- * tool_execution_start around one monotonic latch. Activation has no off
- * switch, and every later event re-asserts the line so a status surface that
- * arrives late still picks it up.
+ * omp extension entry: wires session_start, before_agent_start,
+ * tool_execution_start, and turn_end around one monotonic latch. Activation
+ * has no off switch, and every later event re-asserts the line so a status
+ * surface that arrives late still picks it up. turn_end rescans the journal
+ * because the tool event alone does not reliably reach extensions with a
+ * draw-capable ctx mid-turn.
  * @param {{ on: (event: string, handler: (...args: any[]) => unknown) => void }} pi
  */
 export default function pstackStatusLine(pi) {
@@ -136,6 +138,16 @@ export default function pstackStatusLine(pi) {
     try {
       const payload = /** @type {{ data?: unknown }} */ (event)?.data ?? event;
       if (argsActivate(/** @type {{ args?: unknown }} */ (payload)?.args)) active = true;
+      if (active) draw(ctx);
+    } catch {}
+  });
+
+  pi.on("turn_end", (_event, ctx) => {
+    try {
+      if (!active) {
+        const entries = ctx?.sessionManager?.getBranch?.()?.getEntries?.();
+        if (scanEntries(entries)) active = true;
+      }
       if (active) draw(ctx);
     } catch {}
   });

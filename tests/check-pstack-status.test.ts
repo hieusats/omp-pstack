@@ -147,8 +147,13 @@ describe("scanEntries", () => {
 });
 
 describe("plugin wiring", () => {
-  it("wires exactly session_start, before_agent_start, and tool_execution_start", () => {
-    expect(wire().events).toEqual(["session_start", "before_agent_start", "tool_execution_start"]);
+  it("wires session_start, before_agent_start, tool_execution_start, and turn_end", () => {
+    expect(wire().events).toEqual([
+      "session_start",
+      "before_agent_start",
+      "tool_execution_start",
+      "turn_end",
+    ]);
   });
 
   it("draws nothing before activation", () => {
@@ -241,6 +246,39 @@ describe("plugin wiring", () => {
     const { handlers } = wire();
     handlers.session_start({}, recordingCtx(calls));
     expect(calls).toEqual([]);
+  });
+
+  it("rescans the journal on turn_end when the mid-turn tool event drew nothing", () => {
+    const calls: Array<{ key: string; text: string }> = [];
+    const { handlers } = wire();
+    handlers.tool_execution_start(
+      { data: { toolName: "read", args: activatingArgs } },
+      {},
+    );
+    const ctx = {
+      ...recordingCtx(calls),
+      sessionManager: {
+        getBranch: () => ({ getEntries: () => [toolEntry(activatingArgs)] }),
+      },
+    };
+    handlers.turn_end({}, ctx);
+    expect(calls).toEqual([{ key: STATUS_KEY, text: STATUS_TEXT }]);
+  });
+
+  it("re-asserts on turn_end once latched and stays quiet otherwise", () => {
+    const calls: Array<{ key: string; text: string }> = [];
+    const { handlers } = wire();
+    handlers.before_agent_start({ prompt: DISPATCH_MARKER }, recordingCtx(calls));
+    handlers.turn_end({}, recordingCtx(calls));
+    expect(calls).toEqual([
+      { key: STATUS_KEY, text: STATUS_TEXT },
+      { key: STATUS_KEY, text: STATUS_TEXT },
+    ]);
+
+    const quiet: Array<{ key: string; text: string }> = [];
+    const { handlers: fresh } = wire();
+    fresh.turn_end({}, recordingCtx(quiet));
+    expect(quiet).toEqual([]);
   });
 });
 
